@@ -1,0 +1,152 @@
+message,type,behavior,spam,problems_quant,comment
+"Assine já,XXXX internet por assinatura",comment,neutral,1,0,spam bot
+"excelente produto!, venho bem embalado e no prazo",comment,positive,0,0,comentário positivo sem nada a reclamar
+"Gostei, mas chegou atrasado",comment,positive,0,1,comentario positivo mas há um relato de problema(entrega)
+pessimo atendimento,comment,negative,0,1,"comentario negativo, com um problema(atendimento)"
+chegou dentro do prazo,comment,positive,0,0,"comentario positivo, sem qualquer tipo de problema"
+HORRÍVEL,comment,negative,0,0,comentario muito negativo(capslock) sem informações adicionais do porque
+"Comprei um Ipeg e recebi isso… o LOJA TEST PROMETEU O REEMBOLSO QUANDO EU DEVOLVESSE O PRODUTO E ATÉ AGORA NADA. Já fiz o BO na delegacia, o jeito vai ser entrar com processo judicial. NÃO COMPREM IPEG NO \n@LojaTest\n#Golpe #Ipeg #lojatest",social,negative,0,3,"consumidor irritado e 3 problemas(reembolso,denuncia,juridico)"
+@LojaTest caiu? não consigo comprar nada lá e nem entrar em contato com o suporte via chat,social,question,0,2,"se trata sobre uma duvida e cita 2 problemas(compra,suporte)"
+"Prós
+
+Carreira, salario, beneficios, projetos, cultura
+Contras
+Nada a contestar sobre a empresa",worker,positive,0,0,Funcionario elogiando a empresa e nenhuma reclamação
+"Prós
+Plano de saúde, PPR e trabalho Híbrido
+Contras
+BPO extremamente sangue suga, carga horária extremamente alta e fora das leis trabalhistas, eu e vários clegas já viramos a noite trabalhando para entregar o que o cliente pediu, aliás o novo merchan da Loja Test deveria ser: Sua Alma pelo Cliente, já que a vida e o sangue é obrigado doar em prol do cliente. Quem não conhece a empresa acha que é tudo lindo,mas depois que entra vê o inferno que é. Vc trabalha muito e o salárionão condiz, deve ser por isso que eles oferecem um bom plano de saúde, pois vc vai precisar dele, pode ter certeza
+
+Conselho à presidência
+
+O RH deveria parar de fazer propaganda enganosa e focar nas pessoas, fazer pesquisas com quem está na operação e não ficar mentindo com informações e números mentirosos, Toma vergonha RH da Accentuce, vá ouvir quem está lá na operação adoecendo com crise de ansiedade, depressão e etc..",worker,negative,0,3,"Reclamações severa quanto a empresa, vários problemas"
+"Ótimos benefícios, mas falta de confiança e liderança desmotivadora
+
+Prós
+
+Salário e Benefícios: O salário e os benefícios estão muito acima do mercado. Para designers, o salário varia entre R$12.000 e R$14.000, e os benefícios incluem vale-alimentação e refeição que somam quase R$2.000. A empresa também oferece um ótimo plano de saúde, odontológico, e um vale-farmácia de cerca de R$300 por mês. Esses benefícios realmente se destacam.
+
+
+Contras
+
+Cultura de desconfiança e hierarquia: A empresa possui uma forte cultura hierárquica e de desconfiança. Existe pouca autonomia, e times diferentes parecem isolados, sem muita interação entre áreas como desenvolvimento, produto e design.
+
+Falta de oportunidades de crescimento: Não há um caminho claro para crescimento profissional. Críticas e sugestões de melhoria não são bem recebidas, e em alguns casos, podem levar à demissão de quem se manifesta.
+
+Liderança pouco inspiradora: As lideranças muitas vezes não têm a formação ou competência necessárias e parecem desinteressadas em aprender ou se desenvolver.
+
+Feedbacks punitivos: Feedbacks formais, ao invés de serem usados como ferramentas de desenvolvimento, podem ser usados contra as pessoas depois, criando um ambiente de medo. Além disso, a empresa tende a lidar com críticas de forma punitiva, aplicando processos de avaliação de desempenho (como PIPs) que parecem mais retaliação do que suporte ao desenvolvimento.
+
+Controle sobre horário de trabalho: Embora a empresa afirme que há flexibilidade para o horário, na prática, monitoram quem comparece às reuniões, o que contradiz a proposta de autonomia.
+
+Conselho à presidência
+
+A empresa é bastante incoerente como um todo. A capacidade técnica e de comunicação não parecem ser o foco, e sim a obediência e a submissão. Se esse for realmente o objetivo, sugiro mudar a estratégia de branding, pois atualmente vocês atraem pessoas que esperam um ambiente colaborativo, o que acaba resultando em frustração, demissões e na piora da imagem da empresa.",worker,negative,0,3,Em geral demonstra uma perspectiva mais negativa do que positiva sobre a empresa.
+"Empresa muito boa, mas deve ter um melhor olhar para as pessoas e cultura rotineira
+
+Prós
+Dinamismo do negócio, desafios para seu crescimento, benefícios para os funcionários (especialmente líderes)
+
+Contras
+Com o rápido crescimento dos últimos anos, muitas pessoas foram contratadas. E com isso tenho tido experiências negativas com a forma de trabalho de alguns managers, que vem com uma visão de atuação tendendo ao microgerenciamento e quase que negligenciando quase que totalmente a parte de cultura, clima do ambiente do time, e olhar para as pessoas (foco total nas entregas). Tendo postura de abraçar várias demandas sem alinhar e consultar o time sobre viabilidade. O que gera desgaste e frustração. Você tem que dar a sorte de entrar num time que não tenha líderes com essa visão. São experiências muito distintas e opostas dentro da mesma empresa.
+
+Conselho à presidência
+Reforçar a importancia da nossa cultura, que é necessário todos vivenciarem os principios diariamente, e não pensar neles apenas na avaliação anual. Também ter o olhar que não necessariamente a presencialidade vai fortalecer e melhorar esse contexto de cultura. A presencialidade pode ajudar, mas seria muito importante que o time de people atuasse de forma proativa reforçando e sondando como está o processo dos times, sobre o clima e percepção dos princípios culturais, o bem estar geral das pessoas no contexto que elas estão atuando.",worker,positive,0,1,bastante elogios a empresa mas a reclamações sobre microgerenciamento.
+"Sobrecarga, sem reconhecimento, remuneração de empresa pequena
+
+Prós
+A Matriz é bem interessante, tem academia, bom ar condicionado, restaurante com uns descontos interessantes, vaga para carro eletrico.
+O melhor OnBoarding que ja fiz. Leva cerca de 3 semanas com palestras, cursos e atividades iterativas que REALMENTE agregam. No final tem um projeto que vc apresenta e explora as ferramentas internas.
+
+Contras
+Sobrecarga e jornada de trabalho excessiva fora do padrao de empresas de tecnologia (44h semanais).
+
+Trabalho presencial retornando, a cada semestre a exigencia de presencialidade aumenta e o escritório nao da vazao. Transito de 1h no quarteirao da matriz, estacionamento e cadeiras de trabalho lotadas.
+
+Os times reclamam de estarem sobrecarregados e nada muda.
+
+Os funcionarios com melhores resultados nos ciclos de avaliacao frequentemente trabalham 10h+ no dia, algumas vezes depois das 22h.
+
+Muita falta de reconhecimento. Funcionarios que cresceram na empresa desde Jr. e hj entregam resultados de un Sr nao recebem a devida promocao e reconhecimento e sao usados em comparacao com os outros de mesmo nivel de senioridade criando um resultado injusto.
+
+Os outros Seniors e melhores funcionarios que entraram na equipe nos ultimos tempo nao ficaram nem 3 semanas e sairam apresentando as mesmas razoes: Todo esse esforco e carga de trabalho nao vale o salario proposto, falsa autonomia em que nao conseguimos dar andamento em topicos de melhoria importantes e ambiente desorganizado.
+
+
+Conselho à presidência
+Olhar e cuidar mais dos funcionarios. Existem diferentes perfis, nao é legal trabalhar 10h+ no dia e sair extremamente cansado e ainda sim estar distante das metas.",worker,negative,0,2,Descreve problemas com a carga de trabalho e reconhecimento mas considera a base da empresa sendo bem interessante
+"Podia melhorar
+
+Prós
+Empresa inclusiva, salário acima do mínimo
+
+Contras
+Meta, ninguém é robô pra bater meta o tempo todo, é um trabalho onde se locomove muito e pega muito peso, todo dia tem líder chato que nunca executou o trabalho, enchendo o saco o dia inteiro pra bater meta, eles acham que as pessoas não cansam, é exploratório, ridículo. Sem contar o fato de que quando eu trabalhei lá havias carrinhos (pra executar o trabalho) quebrados, um quase bate na minha cara por estar com a alça solta, tem meta até pra bater o ponto no horário, como tantas pessoas vão bater o ponto às 5:45 em ponto?. Uma hora de almoço, sendo que eles determinam o último bipe pra 11:00 e o almoço é justamente às 11;00, é necessário guardar o material usado pra trabalhar, passar pelo portal com uma fila enorme e ir almoçar com uma fila enorme, pois só tem 2 horários de almoço, fora muiiiiiitas outras coisas.
+
+Conselho à presidência
+Coloquem na liderança pessoas que já exerceram o cargo em que elas vão liderar",worker,negative,0,2,Problemas relacionados a administração(microgerenciamento e a metas)
+"Excelente empresa
+
+Prós
+Tem ótimos salarios e beneficios, condizente para o tamanho de pressão e responsabilidade
+
+Contras
+Tudo muda o tempo todo, tem que ser muito resiliente e se adaptar bem a mudanças",worker,positive,0,0,o funcionário não demonstra problemas com o modo que a empresa lida e considera que os beneficio e salario estão de acordo com os deveres.
+"Nota 10
+
+Prós
+Muita bom a empresa. Recomendo bastante
+
+Contras
+Excelente! Todo suporte possivel pra quem é iniciante
+
+Conselho à presidência
+Legal",worker,positive,1,0,"Análise positiva, mas pode ser vista como um spam pela contradição no contras"
+"Boa Empresa
+
+Prós
+Bom salario, benefício, bons equipamentos de trabalho
+
+Contras
+Modelo hibrido em cargos que facilmente podem ser tocados fora do escritório",worker,positive,0,1,Visão positiva sobre a empresa citando como problema a falta de home office.
+"Excelente empresa, bom salario e bons beneficios
+Gerente de produtos
+
+Prós
+Pessoas legais, cultura legal, experiencia bacana de trabalhar com pessoas cross america latina, bons produtos, empresa vitrine.
+
+Contras
+Tem um modo estranho de priorizar as coisas, um processo chamado porotajem, que apesar de funcionar não ajuda a priorizar as coisas pelas razões certas.
+
+Conselho à presidência
+Continuar o trabalho que já fazem.
+Loja Test tem problemas como qualquer empresa, mas busca constantemente e incansavelmente melhorar.",worker,positive,0,1,"Visão positiva sobre a empresa, cita como problema a priorização"
+"Ok, Mas..
+Representante de envios 2
+
+Prós
+Alimentação no local é boa.
+Alguns líderes realmente dão valor a sua produtividade.
+Ambiente de trabalho inclusivo ao público LGBT+
+Salário acima da média local.
+
+Contras
+Líderes preferem aqueles que se socializam mais e promovem estes, mesmo que não batam metas ou façam corpo mole, e é endemico da empresa.
+Vale refeição de 210 não é atualizado a anos, visto que esse valor não sustenta a alimentação BASICA de alguém durante o mês.
+Líderes não gostam de pessoas que tem mente crítica e logo mostram o que está errado no setor, quem não trabalha e oq poderia ser melhorado; pelo contrário, dão valor a gente que faz corpo mole, o famoso ""AMIGUISMO"".
+Médico local não tem mínima idéia de medicina básica, deve ter feito telecurso só pode.
+
+Conselho à presidência
+Dêem valor a quem trabalha de verdade e parem de subir de cargo pessoas só pq são amigas da liderança. Isso vale principalmente aos empilhadeiristas do ET01. Preguiçosos, desatentos, lentos e mesmo assim recebem tanto quanto um PS, porém só passam a mão na cabeça deles.",worker,negative,0,3,"O funcíonario dá alguns elogios, mas de forma geral cita diversos problemas(reconhecimento, VR, medico, organização)"
+"Salario OK
+Analista pleno
+
+Prós
+Empresa com boas oportunidades de aprendizagem e com uma boa gama de ferramentas.
+
+Contras
+Salários discrepantes, quem tem mais tempo de casa está em uma faixa salarias mais baixa do que novos entrantes.
+
+Conselho à presidência
+Melhora na gestão como um todo é necessario ter um suporte maior ao longo do tempo, além de buscar uma equiparação salarial para evitar uma desmotivação do pessoal.",worker,positive,0,1,Comêntario positivo citando salário injusto como sendo um problema.
+"GOSTEI MUITO DO PRODUTO! TEM ÓTIMA QUALIDADE, E FACILITA MUITO A APLICAÇÃO DO GEL.",comment,positive,0,0,"Apenas elogios, nesse caso capslock foi usado para reforçar a ideia"
+"Não compra este produto, pois o mesmo veio com os botões travados e ao tentar ligar o mesmo nem ligou. Péssima qualidade",comment,negative,0,1,O usuario se demonstra irritado e a um problema com o produto"
