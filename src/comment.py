@@ -1,14 +1,15 @@
 import time
 class Comment:
-    def __init__(self,commentId:int,message:str,msgType:str,data = {},origin="",process = [],dictData = {}):
-        check = lambda cond,fals: dictData[cond] if cond in dictData else fals
+    def __init__(self,commentId:int,message:str,msgType:str,data = None,origin="",process = None,dictData = None):
+        checkDictData = dictData or {}
+        check = lambda cond,fals: checkDictData[cond] if cond in checkDictData else fals
         self.message =check("message",message)
         self.msgType =check("type",msgType)
         self.id = check("id",commentId)
-        self.data = check('data',data)
+        self.data = check('data',data) or {}
         self.origin = check("origin",origin)
-        self.process = check("process",process)
-        self.haveAdditionalData = len(process) > 0
+        self.process = check("process",process) or []
+        self.haveAdditionalData = len(self.process) > 0
     def __str__(self):
         return self.message
     def attachInfo(self,info,processName:str,actualHash:str):
@@ -18,7 +19,7 @@ class Comment:
     
     def __iter__(self):
         self.dict = self.toDict()
-        return iter([(x,self.dict[x]) for x in self.dict.keys()])
+        return iter(self.dict.items())
 
     def toDict(self):
         return {
