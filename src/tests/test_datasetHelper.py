@@ -20,3 +20,11 @@ def test_return_data_without_none():
     text = textdata.format(*comment)
     res = helper.extractDataFrom(text)
     assert all(not x == None for x in res.values())
+def test_return_data_with_none_in_type():
+    comment = list(baseComment)
+    comment[1] = 'invalid type'
+    text = textdata.format(*comment)
+    res = helper.extractDataFrom(text)
+    nones = [x for x in res.values() if x == None]
+    assert res['type'] == None, "expected type to be none returned:"+res['type']
+    assert len(nones) == 1, "expected only one None value"
