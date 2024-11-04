@@ -1,0 +1,7 @@
+-extract the behavior from the user.
+-the behavior can by "positive|negative|neutral|question".
+-extract relevant informations from the message.
+-case the message is a spam define a property "spam" with value true.
+-case the client have described any type of problem, describe with one word the problem described.
+analyze the following messages:
+"{}".

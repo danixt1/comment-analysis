@@ -1,29 +1,30 @@
 from clientObserver import ClientObserver
 from abc import ABC, abstractmethod
+from promptInfo import PromptInfo
 from responseInfo import ResponseInfo
 from clientObserver import ClientObserver
 import logging
 import time
 from comment import Comment
+
 logger = logging.getLogger(__name__)
-import hashlib
 
 # TODO make a folder to put the base prompts and save the SHA1 from the prompts
 class IAClient(ABC):
     """
     Processing flux:
-        1. analyze: analyze is called (DON'T overide)
-        2. _separateCommentsBatch: get the comments and separate in batchs
-        For every batch:
-            1. _generatePrompt: render prompt to AI from the batch of comments
-            2. _makeRequestToAi: pass the prompt generated and request the data, expected the JSON with the comments.
-        Obs: Always return the data from comments in the SAME order of the input.
+    1. analyze: analyze is called (DON'T overide)
+    2. _separateCommentsBatch: get the comments and separate in batchs
+    For every batch:
+        1. _generatePrompt: render prompt to AI from the batch of comments
+        2. _makeRequestToAi: pass the prompt generated and request the data, expected the JSON with the comments.
+    Obs: Always return the data from comments in the SAME order of the input.
     """
     def __init__(self,clientName):
         self.used_tokens = 0
         self.observer = ClientObserver()
         self.clientName = clientName
-
+    # TODO implement this
     def _reportCost(self,tokens: int) -> None:
         """Call this function to report the cost of tokens from the request"""
         self.used_tokens += tokens
@@ -39,47 +40,52 @@ class IAClient(ABC):
         """
         pass
     @abstractmethod
-    def _generatePrompt(self,comments,type_comments:str) ->str:
+    def _generatePrompt(self,comments,type_comments:str) ->PromptInfo:
         pass
     @abstractmethod
     def _makeRequestToAi(self,comments,prompt)->ResponseInfo:
         pass
     # TODO make possibility to do async
-    def analyze(self,comments: list[Comment],type_comments) ->list:
-        generatedData = []
-        observer = self.observer
+    def analyze(self,comments: list[Comment],type_comments):
+        #observer = self.observer
 
-        observer.initializedAnalysis(comments)
-        observer.notify("init")
+        #observer.initializedAnalysis(comments)
+        #observer.notify("init")
 
         batchs = self._separateCommentsBatch(comments,type_comments)
-        observer.notify("batchs")
+        #observer.notify("batchs")
+
         def requestData(batch: list[Comment]):
             prompt = self._generatePrompt(self,batch,type_comments)
-            observer.promptSetted(prompt)
-            response = self._makeRequestToAi(batch,prompt)
-            if response.isSuccessful():
-                generatedData.extend(response.getData())
-                return "ok"
-            error,msg = response.getError()
-            if error in ["timeout","connection"]:
-                logger.warn(f"client {self.clientName}:failed requesting api data, error:{error}, msg:{msg}, retrying...")
-                return "retry"
+            text = str(prompt)
+            #observer.promptSetted(text)
+            response = self._makeRequestToAi(batch,text)
+            if not response.isSuccessful():
+                error,msg = response.getError()
+                if error in ["timeout","connection"]:
+                    logger.warning(f"client {self.clientName}:Failed requesting api data, error:{error}, msg:{msg}, retrying...")
+                    return "retry"
+                logger.error(f"client {self.clientName}:Critical error process finished, error {error}, mgs:{msg}")
+                return False
             data = response.getData()
             for index in range(len(data)):
-                message = batch[index]
-                msgData = data[index]
-                # TODO continue here, attach the SHA1 to the message
-                message.attachInfo(msgData,self.clientName,"<SHA-1>")
+                message,msgData = batch[index],data[index]
+                message.attachInfo(msgData,self.clientName,prompt.hash)
+            return True
+
         for batch in batchs:
             maxRetrys = 4
             retry = 0
-            while(requestData(batch) == "retry"):
+            resultInfo = requestData(batch)
+            while(resultInfo == "retry"):
                 time.sleep(1)
                 retry+=1
                 if retry == maxRetrys:
                     logger.error(f"client {self.clientName}:MAX RETRY REACHED")
-                    return
+                    return False
+            if not resultInfo:
+                return False
+        return True
     
     def attachObserver(self,observer: ClientObserver):
         self.observer = observer

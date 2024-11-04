@@ -33,9 +33,9 @@ class ResponseInfo:
         return self._setError('bad-request',details)
 
     def deprecationWarn(self,message = ""):
-        logger.warn(f"API DEPRECATION:{message}")
+        logger.warning(f"API DEPRECATION:{message}")
         return self
-    def _setError(self,erroType,message):
+    def _setError(self,erroType,details=""):
         self.error(erroType,details)
         self.declaredError = True
         return self
