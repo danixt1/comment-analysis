@@ -9,12 +9,13 @@ class ResponseInfo:
         self.error = ("none","")
 
     def setData(self,data):
+        self.passedData = True
         self._data = data
         return self
     def isSuccessful(self) -> bool:
-        if not self.passedData and self.declaredError :
+        if not self.passedData and not self.declaredError:
             raise Exception("Data not passed and error reason not passed")
-        return self.declaredError
+        return not self.declaredError
     def getData(self):
         return self._data
     def getError(self):

@@ -2,3 +2,4 @@
 src/datasets/inserter.txt
 **/__pycache__
 /.pytest_cache
+.vscode
