@@ -1,15 +1,15 @@
-from clientObserver import ClientObserver
+from typing import List
+from .clientObserver import ClientObserver
 from abc import ABC, abstractmethod
-from promptInfo import PromptInfo
-from responseInfo import ResponseInfo
-from clientObserver import ClientObserver
+from .promptInfo import PromptInfo
+from .responseInfo import ResponseInfo
 import logging
 import time
-from comment import Comment
+from ..comment import Comment
 
 logger = logging.getLogger(__name__)
 
-# TODO make a folder to put the base prompts and save the SHA1 from the prompts
+
 class IAClient(ABC):
     """
     Processing flux:
@@ -24,13 +24,13 @@ class IAClient(ABC):
         self.used_tokens = 0
         self.observer = ClientObserver()
         self.clientName = clientName
-    # TODO implement this
+
     def _reportCost(self,tokens: int) -> None:
         """Call this function to report the cost of tokens from the request"""
         self.used_tokens += tokens
 
     @abstractmethod
-    def _separateCommentsBatch(self,comments: list[Comment], type_comments: str) -> list[list[Comment]]:
+    def _separateCommentsBatch(self,comments: List[Comment]) -> List[List[Comment]]:
         """Receive the data to divide in batchs to send to the AI.
             Divide the data to avoid hallucinations.
 
@@ -40,23 +40,23 @@ class IAClient(ABC):
         """
         pass
     @abstractmethod
-    def _generatePrompt(self,comments,type_comments:str) ->PromptInfo:
+    def _generatePrompt(self,comments) ->PromptInfo:
         pass
     @abstractmethod
     def _makeRequestToAi(self,comments,prompt)->ResponseInfo:
         pass
     # TODO make possibility to do async
-    def analyze(self,comments: list[Comment],type_comments):
+    def analyze(self,comments: List[Comment]):
         #observer = self.observer
 
         #observer.initializedAnalysis(comments)
         #observer.notify("init")
 
-        batchs = self._separateCommentsBatch(comments,type_comments)
+        batchs = self._separateCommentsBatch(comments)
         #observer.notify("batchs")
 
-        def requestData(batch: list[Comment]):
-            prompt = self._generatePrompt(self,batch,type_comments)
+        def requestData(batch: List[Comment]):
+            prompt = self._generatePrompt(batch)
             text = str(prompt)
             #observer.promptSetted(text)
             response = self._makeRequestToAi(batch,text)
@@ -89,3 +89,4 @@ class IAClient(ABC):
     
     def attachObserver(self,observer: ClientObserver):
         self.observer = observer
+__all__ = ["IaClient"]
