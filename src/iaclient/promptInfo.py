@@ -13,7 +13,7 @@ class ExtractData:
         sha1 = hashlib.sha1(self.text.encode('utf-8'))
         return sha1.hexdigest()
     
-promptPath =Path(os.environ["PROMPTS_PATH"] if "PROMPTS_PATH" in os.environ else "prompts")
+promptPath =Path(os.environ["PROMPTS_PATH"] if "PROMPTS_PATH" in os.environ else "src/iaclient/prompts")
 prompts = [ExtractData(txt) for txt in promptPath.glob("*.txt")]
 
 class PromptInfo:
@@ -25,3 +25,6 @@ class PromptInfo:
         self.prompt = prompt.text
     def __str__(self):
         return self.prompt
+    def format(self,*ops):
+        self.prompt = self.prompt.format(*ops)
+        return self

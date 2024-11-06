@@ -1,10 +1,22 @@
-class ClientObserver:
+from ..comment import Comment
+from .promptInfo import PromptInfo
+from .responseInfo import ResponseInfo
+from abc import ABC
+class ClientObserver(ABC):
     """
     Override the functions to get the state of call
     """
-    def promptSetted(self,prompt:str):
+    def notify_batchs_generated(self,batchs:list[list[Comment]]):
+        """Notify after comments being separated in batchs to send to the AI, pass the batchs generated"""
         pass
-    def initializedAnalysis(self,comments):
+    def notify_new_prompt_generated(self,prompt:PromptInfo):
         pass
-    def notify(self,type_message):
+    def notify_ai_response(self,responseInfo:ResponseInfo):
+        pass
+    def notify_data_added_to_comment(self,data:dict,targetComment:Comment):
+        pass
+    def notify_max_retrys_reached(self,comments:list[Comment],prompt:ResponseInfo):
+        pass
+    def notify_tokens_cost_from_analyze(self,tokens:int):
+        """pass the total cost of all prompts sended to AI to by analyzed after calling `analyze` function"""
         pass

@@ -34,3 +34,4 @@ def test_client_flux():
     comments = [Comment(x,'def','comment') for x in range(6)]
     comments[0].message = "prompt1"
     assert client.analyze(comments)
+    assert client.countReqs == 2
