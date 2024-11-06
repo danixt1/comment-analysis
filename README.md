@@ -2,4 +2,11 @@
 
 This project have the purpose to analyze comments from workers and users, and extract relevant data using LLMS.
 
-TODO use unittest.mock[https://docs.python.org/dev/library/unittest.mock.html]
+>Temporary removed requirements.txt(unstable) use:
+```shell
+pip install google-generativeai python-dotenv typing-extensions
+```
+dev:
+```shell
+pip install pytest
+```
