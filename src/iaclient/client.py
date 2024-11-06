@@ -1,4 +1,3 @@
-from typing import List
 from .clientObserver import ClientObserver
 from abc import ABC, abstractmethod
 from .promptInfo import PromptInfo
@@ -22,15 +21,16 @@ class IAClient(ABC):
     """
     def __init__(self,clientName):
         self.used_tokens = 0
-        self.observer = ClientObserver()
+        self.observers:list[ClientObserver] = []
         self.clientName = clientName
+        logger.debug(f'initializing IA client {clientName}')
 
     def _reportCost(self,tokens: int) -> None:
         """Call this function to report the cost of tokens from the request"""
         self.used_tokens += tokens
 
     @abstractmethod
-    def _separateCommentsBatch(self,comments: List[Comment]) -> List[List[Comment]]:
+    def _separateCommentsBatch(self,comments: list[Comment]) -> list[list[Comment]]:
         """Receive the data to divide in batchs to send to the AI.
             Divide the data to avoid hallucinations.
 
@@ -40,26 +40,24 @@ class IAClient(ABC):
         """
         pass
     @abstractmethod
-    def _generatePrompt(self,comments) ->PromptInfo:
+    def _generatePrompt(self,comments:list[Comment]) ->PromptInfo:
         pass
     @abstractmethod
-    def _makeRequestToAi(self,comments,prompt)->ResponseInfo:
+    def _makeRequestToAi(self,prompt:PromptInfo)->ResponseInfo:
         pass
     # TODO make possibility to do async
-    def analyze(self,comments: List[Comment]):
-        #observer = self.observer
-
-        #observer.initializedAnalysis(comments)
-        #observer.notify("init")
-
+    def analyze(self,comments: list[Comment]):
+        observers = self.observers
+        
         batchs = self._separateCommentsBatch(comments)
-        #observer.notify("batchs")
+        batchs = [x for x in batchs if len(x)]
+        for obs in observers:
+            obs.notify_batchs_generated(batchs)
 
-        def requestData(batch: List[Comment]):
-            prompt = self._generatePrompt(batch)
-            text = str(prompt)
-            #observer.promptSetted(text)
-            response = self._makeRequestToAi(batch,text)
+        def requestData(batch: list[Comment],prompt: PromptInfo):
+            response = self._makeRequestToAi(batch,str(prompt))
+            for obs in observers:
+                obs.notify_ai_response(response)
             if not response.isSuccessful():
                 error,msg = response.getError()
                 if error in ["timeout","connection"]:
@@ -70,23 +68,30 @@ class IAClient(ABC):
             data = response.getData()
             for index in range(len(data)):
                 message,msgData = batch[index],data[index]
+                for obs in observers:
+                    obs.notify_data_added_to_comment(data,message)
                 message.attachInfo(msgData,self.clientName,prompt.hash)
             return True
 
         for batch in batchs:
             maxRetrys = 4
             retry = 0
-            resultInfo = requestData(batch)
+            prompt = self._generatePrompt(batch)
+            for obs in observers:
+                obs.notify_new_prompt_generated(prompt)
+            resultInfo = requestData(batch,prompt)
             while(resultInfo == "retry"):
                 time.sleep(1)
                 retry+=1
                 if retry == maxRetrys:
                     logger.error(f"client {self.clientName}:MAX RETRY REACHED")
+                    for obs in observers:
+                        obs.notify_max_retrys_reached(batch,prompt)
                     return False
             if not resultInfo:
                 return False
         return True
     
-    def attachObserver(self,observer: ClientObserver):
+    def addObserver(self,observer: ClientObserver):
         self.observer = observer
 __all__ = ["IaClient"]
