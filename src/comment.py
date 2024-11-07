@@ -1,17 +1,35 @@
 import time
+#TODO make id being hashs
 class Comment:
-    def __init__(self,commentId:int,message:str,msgType:str,data = None,origin="",process = None,dictData = None):
-        checkDictData = dictData or {}
-        check = lambda cond,fals: checkDictData[cond] if cond in checkDictData else fals
-        self.message =check("message",message)
-        self.msgType =check("type",msgType)
-        self.id = check("id",commentId)
-        self.data = check('data',data) or {}
-        self.origin = check("origin",origin)
-        self.process = check("process",process) or []
+    _actId =0
+    def __init__(self,message:str,msgType:str,origin:str,data = None,process = None,timestamp = None):
+        self.timestamp = timestamp
+        self.message =message
+        self.msgType =msgType
+        self.id = Comment._actId
+        self.data = data or {}
+        self.origin = origin
+        self.process = process or []
         self.haveAdditionalData = len(self.process) > 0
+        Comment._actId += 1
     def __str__(self):
         return self.message
+    @staticmethod
+    def createFromDict(dictData:dict):
+        check = lambda cond,fals: dictData[cond] if cond in dictData else fals
+        if not "message" in dictData:
+            raise KeyError("Expected message property")
+        if not "origin" in dictData:
+            raise KeyError("origin need to by specified")
+        return Comment(
+            dictData['message'],
+            check('type',"comment"),
+            dictData['origin'],
+            check('data',None),
+            check('process',None),
+            check('timestamp',None)
+        )
+
     def attachInfo(self,info,processName:str,actualHash:str):
         self.haveAdditionalData = True
         self.data.update(info)
@@ -25,6 +43,7 @@ class Comment:
         return {
             "id":self.id,
             "message":self.message,
+            "timestamp":self.timestamp,
             "type":self.msgType,
             "origin":self.origin,
             "process":self.process,
