@@ -57,7 +57,7 @@ class GeminiClient(IAClient):
     def _generatePrompt(self, comments: List[Comment]) -> PromptInfo:
         prompt = PromptInfo('workers') if comments[0].msgType == 'worker' else PromptInfo('default')
         return prompt.format(self.KNOW_PROBLEMS,"\nNEXT-COMMENT\n".join([str(x) for x in comments]))
-    def _makeRequestToAi(self, comments: List[Comment], prompt) -> ResponseInfo:
+    def _makeRequestToAi(self, prompt) -> ResponseInfo:
         response = ResponseInfo()
         result = self.model.generate_content(
             prompt,

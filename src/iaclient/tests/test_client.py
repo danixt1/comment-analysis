@@ -20,9 +20,8 @@ class FakeClient(IAClient):
         assert len(comments) == 3, "expected only 3 comments after being separated"
         firstCmt = comments[0]
         return PromptInfo('test1' if str(firstCmt) == 'prompt1' else 'test2')
-    def _makeRequestToAi(self,comments: List[Comment],prompt:str)->ResponseInfo:
+    def _makeRequestToAi(self,prompt:str)->ResponseInfo:
         self.countReqs+=1
-        assert len(comments) == 3
         if(self.countReqs > 2):
             raise Exception('Expected only 2 requests to AI')
         assert prompt.startswith('<FIRST_TEST>') if self.countReqs == 1 else prompt.startswith('<SECOND_TEST>')
@@ -31,7 +30,7 @@ class FakeClient(IAClient):
         return response
 def test_client_flux():
     client = FakeClient()
-    comments = [Comment(x,'def','comment') for x in range(6)]
+    comments = [Comment('def','comment','test') for x in range(6)]
     comments[0].message = "prompt1"
     assert client.analyze(comments)
     assert client.countReqs == 2

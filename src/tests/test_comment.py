@@ -1,25 +1,25 @@
 from ..comment import Comment
 
 def test_generate_simple_dict():
-    _id = 1
     message = 'msgTest'
     msgType = 'comment'
-    comment = Comment(_id,message,msgType)
+    comment = Comment(message,msgType,'test')
+    comment.id = 0
     inList = dict(comment)
-    expected = makeBasicDict(_id,message,msgType)
+    expected = makeBasicDict(message,msgType)
     assert inList == expected, "Comment don't generate the expected dict"
 
 def test_generate_dict_with_process_info():
     from time import time
-    _id = 1
     message = 'msgTest'
     msgType = 'comment'
 
     prcName = 'testProcess/1.0'
     fakeHash = 'fawqh'
-    comment = Comment(_id,message,msgType)
+    comment = Comment(message,msgType,"test")
+    comment.id = 0
     comment.attachInfo({'spam':False},prcName,fakeHash)
-    expected = makeBasicDict(_id,message,msgType)
+    expected = makeBasicDict(message,msgType)
     expected['data'] = {'spam':False}
     expected['process'] = [{
         'name':prcName,
@@ -29,18 +29,19 @@ def test_generate_dict_with_process_info():
     assert expected == dict(comment)
     
 def test_get_message_using_str():
-    _id = 1
     message = 'msgTest'
     msgType = 'comment'
-    comment = Comment(_id,message,msgType)
+    comment = Comment(message,msgType,'test')
+    comment.id = 0
     assert message == str(comment)
 
-def makeBasicDict(_id = 1,message = 'msgTest',msgType = 'comment'):
+def makeBasicDict(message = 'msgTest',msgType = 'comment'):
     return {
-        "id":_id,
+        "id":0,
         "message":message,
         "type":msgType,
-        "origin":"",
+        "origin":"test",
         "process":[],
-        "data":{}
+        "data":{},
+        'timestamp':None
     }
