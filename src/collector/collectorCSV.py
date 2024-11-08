@@ -20,7 +20,7 @@ class CollectorCSV(CollectorBase):
             if(not header):
                 header = next(csvReader)
             for data in csvReader:
-                commentDict = []
+                commentDict = {}
                 for index in range(len(header)):
                     dataCell = data[index]
                     commentDict[header[index]] = dataCell

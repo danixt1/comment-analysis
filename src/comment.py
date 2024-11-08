@@ -5,7 +5,7 @@ class Comment:
     def __init__(self,message:str,msgType:str,origin:str,data = None,process = None,timestamp = None):
         self.timestamp = timestamp
         self.message =message
-        self.msgType =msgType
+        self.type =msgType
         self.id = Comment._actId
         self.data = data or {}
         self.origin = origin
@@ -44,7 +44,7 @@ class Comment:
             "id":self.id,
             "message":self.message,
             "timestamp":self.timestamp,
-            "type":self.msgType,
+            "type":self.type,
             "origin":self.origin,
             "process":self.process,
             "data":self.data
