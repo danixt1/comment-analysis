@@ -1,14 +1,14 @@
 import pytest
 from ..collectorDBAPI import CollectorDBAPI
 from sqlalchemy import create_engine, text
-
+from datetime import datetime
 sql_query = """
 CREATE TABLE "comments" (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     post_id INTEGER,
     author_id INTEGER,
     content TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date_gmt TEXT DEFAULT "2024-05-23 10:20:45"
 );
 INSERT INTO comments (post_id, author_id, content) VALUES (1, 1, 'This a test comment');
 INSERT INTO comments (post_id, author_id, content) VALUES (1, 2, 'This is another test comment');
@@ -26,7 +26,9 @@ def db_url(tmp_path_factory):
     return f"sqlite:///{str(db_path)}"
 
 def test_simple_mapping(db_url):
-    collector = CollectorDBAPI(db_url,"comments",[("content","message"),("created_at","timestamp")])
+    convert_date_gmt = lambda date_str: int(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+    collector = CollectorDBAPI(db_url,"comments",[("content","message"),("date_gmt","timestamp",convert_date_gmt)])
     data = collector.collect()
     assert len(data) == 2
     assert data[0].message == "This a test comment"
+    assert data[0].timestamp == convert_date_gmt("2024-05-23 10:20:45")
