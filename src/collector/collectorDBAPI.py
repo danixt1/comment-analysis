@@ -21,6 +21,9 @@ class CollectorDBAPI(CollectorBase):
                 for index in range(len(commentRef)):
                     prop = commentRef[index]
                     valueToSet = row[index]
+                    if len(self.mapping[index]) == 3:
+                        valueToSet = self.mapping[index][2](valueToSet)
+                        
                     dictComments[prop] = valueToSet
                 if not 'origin' in dictComments:
                     dictComments['origin'] = "SQL:"+self.table

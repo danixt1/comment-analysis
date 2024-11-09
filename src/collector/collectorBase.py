@@ -3,5 +3,5 @@ from ..comment import Comment
 
 class CollectorBase(ABC):
     @abstractmethod
-    def collect() -> list[Comment]:
+    def collect(self) -> list[Comment]:
         pass
