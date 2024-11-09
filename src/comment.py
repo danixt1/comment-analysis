@@ -1,5 +1,6 @@
 import time
 #TODO make id being hashs
+#TODO make a variable to reference the external ids connections.
 class Comment:
     _actId =0
     def __init__(self,message:str,msgType:str,origin:str,data = None,process = None,timestamp = None):
