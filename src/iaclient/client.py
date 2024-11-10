@@ -55,6 +55,7 @@ class IAClient(ABC):
             obs.notify_batchs_generated(batchs)
 
         def requestData(batch: list[Comment],prompt: PromptInfo):
+            logger.debug(f"client {self.clientName}:requesting analyze for batch with {len(batch)} comments...")
             response = self._makeRequestToAi(str(prompt))
             for obs in observers:
                 obs.notify_ai_response(response)

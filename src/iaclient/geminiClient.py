@@ -2,13 +2,15 @@ from src.comment import Comment
 from src.iaclient.promptInfo import PromptInfo
 from src.iaclient.responseInfo import ResponseInfo
 from .client import IAClient
+from .clientManager import ClientManager
 from typing import List
 
 import logging
 import os
 import json
+import time
 logger = logging.getLogger(__name__)
-COMMENT_LEN_LIMIT = 9000
+COMMENT_LEN_LIMIT = 1000
 schema = {
     "type":"ARRAY",
     "items":{
@@ -26,12 +28,12 @@ schema = {
 }
 class GeminiClient(IAClient):
     KNOW_PROBLEMS = ['delivery','damaged']
-    def __init__(self):
-        super().__init__(os.getenv("GOOGLE_MODEL") or 'gemini/flash-1.5')
+    def __init__(self,model = "gemini-1.5-flash"):
+        super().__init__('google:'+model)
         import google.generativeai as genai
         genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
 
-        self.model = genai.GenerativeModel("gemini-1.5-flash")
+        self.model = genai.GenerativeModel(model)
 
         self.generation_config=genai.GenerationConfig(
             response_mime_type="application/json", response_schema=schema
@@ -42,7 +44,7 @@ class GeminiClient(IAClient):
         partionClients = {"len":0,"comments":[]}
 
         for comment in comments:
-            partion = partionWorkers if comment.msgType == 'worker' else partionClients
+            partion = partionWorkers if comment.type == 'worker' else partionClients
             msgLen = len(str(comment))
             if msgLen + partion['len'] > COMMENT_LEN_LIMIT:
                 batchs.append(partion['comments'])
@@ -55,8 +57,8 @@ class GeminiClient(IAClient):
 
         return batchs
     def _generatePrompt(self, comments: List[Comment]) -> PromptInfo:
-        prompt = PromptInfo('workers') if comments[0].msgType == 'worker' else PromptInfo('default')
-        return prompt.format(self.KNOW_PROBLEMS,"\nNEXT-COMMENT\n".join([str(x) for x in comments]))
+        prompt = PromptInfo('worker') if comments[0].type == 'worker' else PromptInfo('default')
+        return prompt.format(self.KNOW_PROBLEMS,"\n\n---------NEXT-COMMENT-------\n\n".join([str(x) for x in comments]))
     def _makeRequestToAi(self, prompt) -> ResponseInfo:
         response = ResponseInfo()
         result = self.model.generate_content(
@@ -65,5 +67,7 @@ class GeminiClient(IAClient):
         )
         self._reportCost(result.usage_metadata.total_token_count)
         data = json.loads(result.text)
+        time.sleep(3)
         return response.setData(data)
     
+ClientManager.registerClient("gemini",GeminiClient)
