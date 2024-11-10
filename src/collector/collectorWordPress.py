@@ -2,6 +2,7 @@ from datetime import datetime
 from src.comment import Comment
 from .collectorBase import CollectorBase
 from .collectorDBAPI import CollectorDBAPI
+from .collectorManager import CollectorManager
 
 class CollectorWordPress(CollectorBase):
     def __init__(self,database:str,user:str,password:str,host:str,port:str = "3306",connector = "mysql+mysqlconnector") -> None:
@@ -13,3 +14,5 @@ class CollectorWordPress(CollectorBase):
         table = "wp_comments"
         self.collector = CollectorDBAPI(self.url,table,mapping)
         return self.collector.collect()
+
+CollectorManager.registerCollector("wordpress", CollectorWordPress)

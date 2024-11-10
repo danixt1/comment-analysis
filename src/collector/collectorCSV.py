@@ -1,11 +1,14 @@
 from src.comment import Comment
 from .collectorBase import CollectorBase
+from .collectorManager import CollectorManager
 import os.path as path
 import csv
+
+
 class CollectorCSV(CollectorBase):
-    def __init__(self,csvPath,delimiter = ',',header = None) -> None:
+    def __init__(self,path,delimiter = ',',header = None,encoding = 'utf-8') -> None:
         super().__init__()
-        self.csvPath = csvPath
+        self.csvPath = path
         self.delimiter = delimiter
         self.header = header
 
@@ -15,7 +18,7 @@ class CollectorCSV(CollectorBase):
     def collect(self) -> list[Comment]:
         comments = []
         header = self.header
-        with open(self.csvPath,newline='') as fileCSV:
+        with open(self.csvPath,newline='',encoding='utf-8') as fileCSV:
             csvReader = csv.reader(fileCSV,delimiter=self.delimiter)
             if(not header):
                 header = next(csvReader)
@@ -28,3 +31,5 @@ class CollectorCSV(CollectorBase):
                     commentDict["origin"] = "CSV"
                 comments.append(Comment.createFromDict(commentDict))
         return comments
+    
+CollectorManager.registerCollector("CSV", CollectorCSV)
