@@ -1,6 +1,4 @@
-import os
-os.environ["PROMPTS_PATH"] = "src/iaclient/tests/prompt"
-from ..promptInfo import PromptInfo
+from ..promptInfo import PromptInfo, setPromptsPath
 from ..client import IAClient
 from ...comment import Comment
 from ..responseInfo import ResponseInfo
@@ -29,6 +27,7 @@ class FakeClient(IAClient):
         response.setData([{"behavior":"neutral"},{"behavior":"happy"},{"behavior":"angry"}])
         return response
 def test_client_flux():
+    setPromptsPath("src/iaclient/tests/prompt")
     client = FakeClient()
     comments = [Comment('def','comment','test') for x in range(6)]
     comments[0].message = "prompt1"

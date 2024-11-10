@@ -1,7 +1,8 @@
 from pathlib import Path
 import hashlib
-import os
+
 indexs = []
+prompts = []
 class ExtractData:
     def __init__(self,file:Path) -> None:
         self.name = file.name[:-4]
@@ -13,12 +14,10 @@ class ExtractData:
         sha1 = hashlib.sha1(self.text.encode('utf-8'))
         return sha1.hexdigest()
     
-promptPath =Path(os.environ["PROMPTS_PATH"] if "PROMPTS_PATH" in os.environ else "src/iaclient/prompts")
-prompts = [ExtractData(txt) for txt in promptPath.glob("*.txt")]
 
 class PromptInfo:
     """ Get the text and hash from the specified prompt, prompt name is the prompt file without the extension"""
-    def __init__(self,promptName):
+    def __init__(self,promptName:str):
         promptId = indexs.index(promptName)
         prompt = prompts[promptId]
         self.hash = prompt.hash
@@ -28,3 +27,10 @@ class PromptInfo:
     def format(self,*ops):
         self.prompt = self.prompt.format(*ops)
         return self
+    
+def setPromptsPath(path):
+    indexs.clear()
+    prompts.clear()
+    promptPath =Path(path)
+    prompts.extend([ExtractData(txt) for txt in promptPath.glob("*.txt")])
+setPromptsPath("src/iaclient/prompts")
