@@ -1,24 +1,15 @@
 from .client import IAClient
+from src.managerBase import ManagerBase
+from src.comment import Comment
+from .managerInstanceable import initInstanceables
 
-class ClientManager:
-    _clientsInit = {}
+class ClientManager(ManagerBase):
+    def __init__(self) -> None:
+        super().__init__()
+        self._items:list[IAClient] = []
 
-    def __init__(self):
-        self._clients = []
-    
-    @staticmethod
-    def initWithConfig(config:dict):
-        clientManager = ClientManager()
-        for clientConfig in config:
-            clientName = clientConfig['name']
-            del clientConfig['name']
-            clientManager._clients.append(ClientManager._clientsInit[clientName](clientConfig))
-        return clientManager
-    @staticmethod
-    def registerClient(name:str,client):
-        ClientManager._clientsInit[name] = (lambda config: client(**config)) if issubclass(client, IAClient) else client
-
-    def analyze(self,comments:list):
-        for client in self._clients:
+    def analyze(self,comments:list[Comment]):
+        for client in self._items:
             client.analyze(comments)
     
+initInstanceables(ClientManager)
