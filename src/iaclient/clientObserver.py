@@ -11,8 +11,6 @@ class ClientObserver(ABC):
         pass
     def notify_new_prompt_generated(self,prompt:PromptInfo):
         pass
-    def notify_ai_response(self,responseInfo:ResponseInfo):
-        pass
     def notify_data_added_to_comment(self,data:dict,targetComment:Comment):
         pass
     def notify_max_retrys_reached(self,comments:list[Comment],prompt:ResponseInfo):

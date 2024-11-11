@@ -1,8 +1,8 @@
 from src.comment import Comment
 from src.iaclient.promptInfo import PromptInfo
-from src.iaclient.responseInfo import ResponseInfo
+
 from .client import IAClient
-from typing import List
+from .requestProcess import RequestProcess
 
 import logging
 import os
@@ -38,7 +38,7 @@ class GeminiClient(IAClient):
         self.generation_config=genai.GenerationConfig(
             response_mime_type="application/json", response_schema=schema
         )
-    def _separateCommentsBatch(self, comments: List[Comment]) -> List[List[Comment]]:
+    def _separateCommentsBatch(self, comments: list[Comment]) -> list[list[Comment]]:
         batchs = []
         partionWorkers = {"len":0,"comments":[]}
         partionClients = {"len":0,"comments":[]}
@@ -56,17 +56,18 @@ class GeminiClient(IAClient):
         batchs.append(partionWorkers['comments'])
 
         return batchs
-    def _generatePrompt(self, comments: List[Comment]) -> PromptInfo:
-        prompt = PromptInfo('worker') if comments[0].type == 'worker' else PromptInfo('default')
-        return prompt.format(self.KNOW_PROBLEMS,"\n\n---------NEXT-COMMENT-------\n\n".join([str(x) for x in comments]))
-    def _makeRequestToAi(self, prompt) -> ResponseInfo:
-        response = ResponseInfo()
+    def _generatePrompt(self, comments: list[Comment]) -> PromptInfo:
+        prompt = PromptInfo('worker' if comments[0].type == 'worker' else 'default')
+        formatedComments ="".join([f"<comment>{str(x)}</comment>" for x in comments])
+        if comments[0].type == 'worker':
+            return prompt.format(formatedComments)
+        return prompt.format(self.KNOW_PROBLEMS,formatedComments)
+    
+    def _makeRequestToAi(self, prompt,request:RequestProcess):
         result = self.model.generate_content(
             prompt,
             generation_config=self.generation_config
         )
-        self._reportCost(result.usage_metadata.total_token_count)
         data = json.loads(result.text)
-        time.sleep(3)
-        return response.setData(data)
+        return request.setData(data).setTokensInput(result.usage_metadata.prompt_token_count).setTokensOutput(result.usage_metadata.candidates_token_count)
     

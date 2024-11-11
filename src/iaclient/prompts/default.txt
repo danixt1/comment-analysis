@@ -1,9 +1,10 @@
--extract the behavior from the user.
+-extract the behavior from the message.
 -the behavior can by "positive|negative|neutral|question".
 -extract relevant informations from the message.
 -case the message is a spam define a property "spam" with value true.
--case the client have described any type of problem, describe with one word(in english) the problem described.
--depending of the context of the problems use: {}. case any of the options fit to the problem put the new problem.
--consider a new message to by analyzed after "NEXT-COMMENT"
+-case the message have described any type of problem, describe with one word(in english) the problem described.
+-some already known problems:{}.
+-use other word case the described problem in message don't fit with the know problem.
+
 analyze the following messages:
 "{}".

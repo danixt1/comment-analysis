@@ -2,6 +2,8 @@ from .clientObserver import ClientObserver
 from abc import ABC, abstractmethod
 from .promptInfo import PromptInfo
 from .responseInfo import ResponseInfo
+from .process import Process
+from .requestProcess import RequestProcess
 import logging
 import time
 from ..comment import Comment
@@ -20,14 +22,10 @@ class IAClient(ABC):
     Obs: Always return the data from comments in the SAME order of the input.
     """
     def __init__(self,clientName):
-        self.used_tokens = 0
         self.observers:list[ClientObserver] = []
         self.clientName = clientName
         logger.debug(f'initializing IA client {clientName}')
 
-    def _reportCost(self,tokens: int) -> None:
-        """Call this function to report the cost of tokens from the request"""
-        self.used_tokens += tokens
 
     @abstractmethod
     def _separateCommentsBatch(self,comments: list[Comment]) -> list[list[Comment]]:
@@ -43,10 +41,11 @@ class IAClient(ABC):
     def _generatePrompt(self,comments:list[Comment]) ->PromptInfo:
         pass
     @abstractmethod
-    def _makeRequestToAi(self,prompt:PromptInfo)->ResponseInfo:
+    def _makeRequestToAi(self,prompt:PromptInfo,request:RequestProcess):
         pass
     # TODO make possibility to do async
     def analyze(self,comments: list[Comment]):
+        process = Process(self.clientName)
         observers = self.observers
         
         batchs = self._separateCommentsBatch(comments)
@@ -54,19 +53,20 @@ class IAClient(ABC):
         for obs in observers:
             obs.notify_batchs_generated(batchs)
 
-        def requestData(batch: list[Comment],prompt: PromptInfo):
+        def requestData(batch: list[Comment],prompt: PromptInfo,index:int):
             logger.debug(f"client {self.clientName}:requesting analyze for batch with {len(batch)} comments...")
-            response = self._makeRequestToAi(str(prompt))
-            for obs in observers:
-                obs.notify_ai_response(response)
-            if not response.isSuccessful():
-                error,msg = response.getError()
+            requestData = RequestProcess( prompt, batch)
+            self._makeRequestToAi(str(prompt),requestData)
+            requestData.finish()
+            process.getRequest(requestData, index)
+            if requestData.error:
+                error,msg = requestData.error
                 if error in ["timeout","connection"]:
                     logger.warning(f"client {self.clientName}:Failed requesting api data, error:{error}, msg:{msg}, retrying...")
                     return "retry"
                 logger.error(f"client {self.clientName}:Critical error process finished, error {error}, mgs:{msg}")
                 return False
-            data = response.getData()
+            data = requestData.data
             for index in range(len(data)):
                 message,msgData = batch[index],data[index]
                 for obs in observers:
@@ -78,20 +78,22 @@ class IAClient(ABC):
             maxRetrys = 4
             retry = 0
             prompt = self._generatePrompt(batch)
+            index = process.addBatch(prompt,batch)
             for obs in observers:
                 obs.notify_new_prompt_generated(prompt)
-            resultInfo = requestData(batch,prompt)
+            resultInfo = requestData(batch,prompt,index)
             while(resultInfo == "retry"):
                 time.sleep(1)
                 retry+=1
                 if retry == maxRetrys:
                     logger.error(f"client {self.clientName}:MAX RETRY REACHED")
                     for obs in observers:
-                        obs.notify_max_retrys_reached(batch,prompt)
+                        obs.notify_max_retrys_reached(batch,prompt,index)
                     return False
             if not resultInfo:
                 return False
-        return True
+        process.finish()
+        return process
     
     def addObserver(self,observer: ClientObserver):
         self.observer = observer
