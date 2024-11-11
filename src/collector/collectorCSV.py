@@ -1,6 +1,5 @@
 from src.comment import Comment
 from .collectorBase import CollectorBase
-from .collectorManager import CollectorManager
 import os.path as path
 import csv
 
@@ -32,4 +31,3 @@ class CollectorCSV(CollectorBase):
                 comments.append(Comment.createFromDict(commentDict))
         return comments
     
-CollectorManager.registerCollector("CSV", CollectorCSV)

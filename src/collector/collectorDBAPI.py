@@ -1,7 +1,6 @@
 from src.comment import Comment
 from .collectorBase import CollectorBase
 from sqlalchemy import create_engine, text
-from .collectorManager import CollectorManager
 
 class CollectorDBAPI(CollectorBase):
 
@@ -32,4 +31,3 @@ class CollectorDBAPI(CollectorBase):
                 comments.append(Comment.createFromDict(dictComments))
         return comments
     
-CollectorManager.registerCollector("DBAPI", CollectorDBAPI)
