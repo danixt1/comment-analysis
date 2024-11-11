@@ -5,9 +5,9 @@ This project have the purpose to analyze comments from workers and users, and ex
 TODO: make caching system.
 
 # TODO: new system to save the state of process
-Instead of passing the process information in `proccess` property, pass a id of the process, with this logic is possible to add much more details of how the proccess runned.
+Instead of passing the process information in `process` property, pass a id of the process, with this logic is possible to add much more details of how the process runned.
 
-The proccess object:
+The process object:
 ```json
 {
     "id":"INT: unique id, passed to the comment to refer the proccess",
@@ -46,9 +46,14 @@ The proccess object:
 
 >Temporary removed requirements.txt(unstable) use:
 ```shell
-pip install google-generativeai python-dotenv
+pip install google-generativeai python-dotenv mysql-connector-python SQLAlchemy pymongo
 ```
 dev:
 ```shell
 pip install pytest
 ```
+
+# Usage mapping:
+collectorDBAPI = SQLAlchemy #if using only sqlite
+collectorMySql = mysql-connector-python SQLAlchemy
+geminiClient = google-generativeai
