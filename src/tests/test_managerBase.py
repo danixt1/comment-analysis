@@ -14,18 +14,20 @@ class Fake2(FakeBaseClass):
     def __init__(self):
         Fake2.called = True
     
-@pytest.fixture(scope="session")
-def FakeManagerClass():
+
+def MakeFakeManagerClass():
     class FakeManager(ManagerBase):
         called = False
         def __init__(self,customProp) -> None:
             super().__init__()
             assert customProp == 'work'
             FakeManager.called = True
-
+    #FakeManager._builders = {}
+    FakeManager.called = False
     return FakeManager
 
-def test_manager_init(FakeManagerClass):
+def test_manager_init():
+    FakeManagerClass = MakeFakeManagerClass()
     FakeManagerClass.addInstanceable('test1', Fake1)
     FakeManagerClass.addInstanceable('test2', Fake2)
     manager = FakeManagerClass.initWithConfig({
@@ -43,9 +45,10 @@ def test_manager_init(FakeManagerClass):
 
     assert FakeManagerClass.called, "FakeManager was not initialized"
     assert Fake2.called, "Fake2 was not initialized"
-    assert len(manager._builders) == 2
+    assert len(FakeManagerClass._builders) == 2
 
-def test_manager_with_lambda(FakeManagerClass):
+def test_manager_with_lambda():
+    FakeManagerClass = MakeFakeManagerClass()
     makeCalled = False
     def makeFake2(config):
         nonlocal makeCalled
@@ -65,3 +68,10 @@ def test_manager_with_lambda(FakeManagerClass):
     })
     assert len(manager._builders) == 1
     assert makeCalled, "fn makeFake2 was not called"
+    
+def test_builder_property_is_in_cls_level():
+    FakeManagerClass1 = MakeFakeManagerClass()
+    FakeManagerClass1.addInstanceable('test1', Fake1)
+    FakeManagerClass2 = MakeFakeManagerClass()
+    assert len(FakeManagerClass1._builders) == 1
+    assert len(FakeManagerClass2._builders) == 0
