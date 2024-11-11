@@ -8,8 +8,10 @@ def raiseInvalStr(obj, propName):
         raise TypeError(propName + ' must be a string')
     
 class ManagerBase(ABC):
-    _builders = {}
-
+    
+    def __init_subclass__(cls) -> None:
+        super().__init_subclass__()
+        cls._builders = {}
     def __init__(self) -> None:
         super().__init__()
         self._items = []
@@ -19,7 +21,7 @@ class ManagerBase(ABC):
     
     @classmethod
     def addInstanceable(cls,name, instanceable):
-        ManagerBase._builders[name] = (lambda config: instanceable(**config)) if isinstance(instanceable,type) else instanceable
+        cls._builders[name] = (lambda config: instanceable(**config)) if isinstance(instanceable,type) else instanceable
     
     @classmethod
     def initWithConfig(cls,config):
@@ -38,8 +40,8 @@ class ManagerBase(ABC):
             name = instanceConfig['name'].lower()
             del instanceConfig['name']
 
-            if not name in ManagerBase._builders:
-                raise KeyError('instance not found in instanceables list, supported:'+",".join(cls._builders.keys()) + '.')
-            item = ManagerBase._builders[name](instanceConfig)
+            if not name in cls._builders:
+                raise KeyError(f'instance "{name}" not found in instanceables list, supported:{",".join(cls._builders.keys())}.')
+            item = cls._builders[name](instanceConfig)
             instance.add(item)
         return instance
