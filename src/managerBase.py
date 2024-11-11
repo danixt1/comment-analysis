@@ -1,4 +1,4 @@
-from abc import ABC,abstractmethod
+from abc import ABC
 
 
 def raiseInvalStr(obj, propName):
@@ -14,18 +14,12 @@ class ManagerBase(ABC):
         super().__init__()
         self._items = []
 
-    @staticmethod
-    @abstractmethod
-    def _getBaseClass():
-        pass
-
     def add(self, obj):
         self._items.append(obj)
     
     @classmethod
     def addInstanceable(cls,name, instanceable):
-        baseClass =  cls._getBaseClass()
-        ManagerBase._builders[name] = (lambda config: instanceable(**config)) if issubclass(instanceable, baseClass) else instanceable
+        ManagerBase._builders[name] = (lambda config: instanceable(**config)) if isinstance(instanceable,type) else instanceable
     
     @classmethod
     def initWithConfig(cls,config):
