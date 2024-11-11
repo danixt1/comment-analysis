@@ -1,0 +1,25 @@
+{
+    "collector":{
+        "data":[
+            {
+                "name":"csv",
+                "path":"./src/datasets/dataset.csv"
+            }
+        ]
+    },
+    "processing":{
+        "data":[
+            {
+                "name":"gemini"
+            }
+        ]
+    },
+    "output":{
+        "data":[
+            {
+                "name":"mongodb",
+                "host":"localhost"
+            }
+        ]
+    }
+}

@@ -3,7 +3,7 @@ from src.iaclient.clientManager import ClientManager
 from src.output.outputManager import OutputManager
 import logging
 config = {}
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 with open('config.json','r') as f:
     import json
     config = json.load(f)
@@ -13,5 +13,5 @@ processor = ClientManager.initWithConfig(config['processing'])
 output = OutputManager.initWithConfig(config['output'])
 
 comments = collector.collect()
-processor.analyze(comments)
-output.output(comments)
+result =processor.analyze(comments)
+output.output(comments,result)
