@@ -21,7 +21,8 @@ class OutputMongoDb(OutputBase):
         self.comments_collection = db[config['comments_collection']]
         self.process_collection = db[config['process_collection']]
         return True
-    def sendData(self, comments: list[Comment]):
+    def sendData(self, comments: list[Comment],processResults:list):
         self.connect()
         toInsert = [dict(comment) for comment in comments]
         self.comments_collection.insert_many(toInsert)
+        self.process_collection.insert_many([x.toDict() for x in processResults])

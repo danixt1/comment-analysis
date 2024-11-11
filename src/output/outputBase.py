@@ -3,5 +3,5 @@ from ..comment import Comment
 
 class OutputBase(ABC):
     @abstractmethod
-    def sendData(self,comments:list[Comment]):
+    def sendData(self,comments:list[Comment],processResults:list):
         pass
