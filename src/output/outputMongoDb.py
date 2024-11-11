@@ -2,7 +2,7 @@ from pymongo import MongoClient
 
 from src.comment import Comment
 from .outputBase import OutputBase
-from .outputManager import OutputManager
+
 class OutputMongoDb(OutputBase):
     def __init__(self,host,db="behavior-analysis",port = "27017",user = '', password = '',
                  process_collection = 'behavior-analysis-process',
@@ -25,5 +25,3 @@ class OutputMongoDb(OutputBase):
         self.connect()
         toInsert = [dict(comment) for comment in comments]
         self.comments_collection.insert_many(toInsert)
-
-OutputManager.registerOutput('mongodb',OutputMongoDb)
