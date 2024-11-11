@@ -2,7 +2,6 @@ from src.comment import Comment
 from src.iaclient.promptInfo import PromptInfo
 from src.iaclient.responseInfo import ResponseInfo
 from .client import IAClient
-from .clientManager import ClientManager
 from typing import List
 
 import logging
@@ -10,6 +9,7 @@ import os
 import json
 import time
 logger = logging.getLogger(__name__)
+
 COMMENT_LEN_LIMIT = 1000
 schema = {
     "type":"ARRAY",
@@ -70,4 +70,3 @@ class GeminiClient(IAClient):
         time.sleep(3)
         return response.setData(data)
     
-ClientManager.registerClient("gemini",GeminiClient)
