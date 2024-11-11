@@ -1,12 +1,12 @@
 from .clientObserver import ClientObserver
 from abc import ABC, abstractmethod
 from .promptInfo import PromptInfo
-from .responseInfo import ResponseInfo
 from .process import Process
 from .requestProcess import RequestProcess
+from ..comment import Comment
+
 import logging
 import time
-from ..comment import Comment
 
 logger = logging.getLogger(__name__)
 

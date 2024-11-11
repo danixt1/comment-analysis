@@ -1,6 +1,6 @@
 from ..comment import Comment
 from .promptInfo import PromptInfo
-from .responseInfo import ResponseInfo
+
 from abc import ABC
 class ClientObserver(ABC):
     """
@@ -13,7 +13,7 @@ class ClientObserver(ABC):
         pass
     def notify_data_added_to_comment(self,data:dict,targetComment:Comment):
         pass
-    def notify_max_retrys_reached(self,comments:list[Comment],prompt:ResponseInfo):
+    def notify_max_retrys_reached(self,comments:list[Comment],prompt):
         pass
     def notify_tokens_cost_from_analyze(self,tokens:int):
         """pass the total cost of all prompts sended to AI to by analyzed after calling `analyze` function"""
