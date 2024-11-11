@@ -1,4 +1,5 @@
 from ..managerBase import ManagerBase
+import pytest
 
 
 class FakeBaseClass:
@@ -12,19 +13,22 @@ class Fake2(FakeBaseClass):
     called = False
     def __init__(self):
         Fake2.called = True
-class FakeManager(ManagerBase):
-    called = False
-    def __init__(self,customProp) -> None:
-        super().__init__()
-        assert customProp == 'work'
-        FakeManager.called = True
-    @staticmethod
-    def _getBaseClass():
-        return FakeBaseClass
-FakeManager.addInstanceable('test1', Fake1)
-FakeManager.addInstanceable('test2', Fake2)
-def test_manager_init():
-    manager = FakeManager.initWithConfig({
+    
+@pytest.fixture(scope="session")
+def FakeManagerClass():
+    class FakeManager(ManagerBase):
+        called = False
+        def __init__(self,customProp) -> None:
+            super().__init__()
+            assert customProp == 'work'
+            FakeManager.called = True
+
+    return FakeManager
+
+def test_manager_init(FakeManagerClass):
+    FakeManagerClass.addInstanceable('test1', Fake1)
+    FakeManagerClass.addInstanceable('test2', Fake2)
+    manager = FakeManagerClass.initWithConfig({
         "customProp": "work",
         "data":[
             {
@@ -36,6 +40,28 @@ def test_manager_init():
             }
         ]
     })
-    assert FakeManager.called, "FakeManager was not initialized"
+
+    assert FakeManagerClass.called, "FakeManager was not initialized"
     assert Fake2.called, "Fake2 was not initialized"
     assert len(manager._builders) == 2
+
+def test_manager_with_lambda(FakeManagerClass):
+    makeCalled = False
+    def makeFake2(config):
+        nonlocal makeCalled
+        assert "test" in config
+        assert config['test'] == 'ok'
+        makeCalled = True
+        return Fake2()
+    FakeManagerClass.addInstanceable('faker', makeFake2)
+    manager = FakeManagerClass.initWithConfig({
+        "customProp": "work",
+        "data":[
+            {
+                "name": "faker",
+                "test": "ok"
+            }
+        ]
+    })
+    assert len(manager._builders) == 1
+    assert makeCalled, "fn makeFake2 was not called"
