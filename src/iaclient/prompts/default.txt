@@ -4,7 +4,7 @@
 -case the message is a spam define a property "spam" with value true.
 -case the message have described any type of problem, describe with one word(in english) the problem described.
 -some already known problems:{}.
--use other word case the described problem in message don't fit with the know problem.
+-if the problem don't match any of the already know, pass the new problems.
 
 analyze the following messages:
 "{}".

@@ -2,6 +2,6 @@
 -the behavior can by "positive|negative|neutral|question".
 -extract relevant informations from the message.
 -case the message is a spam define a property "spam" with value true.
--case the worker message have described problems in the company, describe with one word for every problem described in the message.
+-case the worker message have described problems in the company, describe with one word for every problem described in the message(in english).
 analyze the following messages:
 "{}".
