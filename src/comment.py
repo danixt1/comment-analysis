@@ -3,12 +3,11 @@ import time
 #TODO make a variable to reference the external ids connections.
 class Comment:
     _actId =0
-    def __init__(self,message:str,msgType:str,origin:str,data = None,process = None,timestamp = None):
+    def __init__(self,message:str,msgType:str,origin:str,process = None,timestamp = None):
         self.timestamp = timestamp
         self.message =message
         self.type =msgType
         self.id = Comment._actId
-        self.data = data or {}
         self.origin = origin
         self.process = process or []
         self.haveAdditionalData = len(self.process) > 0
@@ -26,15 +25,13 @@ class Comment:
             dictData['message'],
             check('type',"comment"),
             dictData['origin'],
-            check('data',None),
             check('process',None),
             check('timestamp',None)
         )
 
-    def attachInfo(self,info,processName:str,actualHash:str):
+    def attachInfo(self,info,processName:str,process_id:int):
         self.haveAdditionalData = True
-        self.data.update(info)
-        self.process.append({"name":processName,"hash":actualHash,"timestamp": int(time.time() * 1000)})
+        self.process.append({"name":processName,"data":info,"process_id":process_id})
     
     def __iter__(self):
         self.dict = self.toDict()
@@ -47,6 +44,5 @@ class Comment:
             "timestamp":self.timestamp,
             "type":self.type,
             "origin":self.origin,
-            "process":self.process,
-            "data":self.data
+            "process":self.process
         }

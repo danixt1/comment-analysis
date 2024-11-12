@@ -71,7 +71,7 @@ class IAClient(ABC):
                 message,msgData = batch[index],data[index]
                 for obs in observers:
                     obs.notify_data_added_to_comment(data,message)
-                message.attachInfo(msgData,self.clientName,prompt.hash)
+                message.attachInfo(msgData,self.clientName,process.id)
             return True
 
         for batch in batchs:

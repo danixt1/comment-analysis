@@ -15,16 +15,14 @@ def test_generate_dict_with_process_info():
     msgType = 'comment'
 
     prcName = 'testProcess/1.0'
-    fakeHash = 'fawqh'
     comment = Comment(message,msgType,"test")
     comment.id = 0
-    comment.attachInfo({'spam':False},prcName,fakeHash)
+    comment.attachInfo({'spam':False},prcName,1)
     expected = makeBasicDict(message,msgType)
-    expected['data'] = {'spam':False}
     expected['process'] = [{
         'name':prcName,
-        'hash':fakeHash,
-        'timestamp':int(time() * 1000)
+        'data':{'spam':False},
+        "process_id":1
     }]
     assert expected == dict(comment)
     
@@ -42,6 +40,5 @@ def makeBasicDict(message = 'msgTest',msgType = 'comment'):
         "type":msgType,
         "origin":"test",
         "process":[],
-        "data":{},
         'timestamp':None
     }
