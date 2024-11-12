@@ -44,8 +44,8 @@ class OutputMongoDb(OutputBase):
                     comments_id[comment_local_id] = comment_db_id
 
         for comment in toInsert:
-            comment['_id'] = comments_id[comment['id']]
-            del comment['id']
+            comment['_id'] = comments_id[comment['local_id']]
+            del comment['local_id']
             for processInfo in comment['process']:
                 processInfo['process_id'] = process_id[processInfo['process_id']]
         self.comments_collection.insert_many(toInsert)

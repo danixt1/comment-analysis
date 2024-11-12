@@ -31,7 +31,7 @@ class Process:
                 "input":0,
                 "output":0
             },
-            "comments_id":[comment.id for comment in comments],
+            "comments_id":[comment.localId for comment in comments],
             "successfulRequest":None
         }
         self.batchs.append(batch)
