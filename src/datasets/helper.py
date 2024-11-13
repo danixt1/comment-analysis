@@ -6,14 +6,14 @@ import time
 import csv
 import re
 from pathlib import Path
+
 inserter_filename = "inserter.txt"
 info_messages = [
     "A mensagem/comentario/avaliação do usuario",
-    "tipo(social,worker->avaliacao de funcionario,comment)",
-    "o comportamento analisado na mensagem(positive,negative,neutral)",
+    "tipo(social,worker,comment)",
+    "o comportamento analisado na mensagem(positive,negative,neutral,any[irrelevante])",
     "Se a mensagem é ou não spam(true,false)",
-    "quantidades de problemas minimos que a IA deverá indentificar",
-    "um comentario adicional para auto ánalise de prompt da IA (não obrigatório)"
+    "quantidades de problemas minimos que a IA deverá indentificar"
 ]
 def toPrint(message):
     if __name__ == '__main__':
@@ -24,17 +24,17 @@ def invalidOp(data):
 def printAndRetNone(message):
     toPrint(message)
     return None
+
 strLambda = lambda x: x
 inLambda = lambda x,y:x.lower() if x.lower() in y else invalidOp(y)
 info = {
     "message":strLambda,
     "type":lambda x:inLambda(x,["social","worker","comment"]),
-    "behavior":lambda x:inLambda(x,["positive","negative","neutral","question"]),
+    "behavior":lambda x:inLambda(x,["positive","negative","neutral","question","any"]),
     "spam": lambda x:"1" if x == "true" or x == "1"  else "0",
-    "problems": lambda x:x if x.isnumeric() else printAndRetNone("Expected numeric value in problems collum"),
-    "comment": strLambda
+    "problems": lambda x:x if x.isnumeric() else printAndRetNone("Expected numeric value in problems collum")
 }
-insertOrder = ["message","type","behavior","spam","problems","comment"]
+insertOrder = ["message","type","behavior","spam","problems"]
 titlesInFile = ["# {} {}".format(insertOrder[pos],info_messages[pos]) for pos in range(len(insertOrder))]
 
 def clearInserterFiler():
@@ -45,7 +45,6 @@ def extractDataFrom(text:str):
     data = {}
     for title in insertOrder:
         data[title] = None
-    data["comment"] = ""
     lines = text.splitlines()
     prop = ""
     content = ""
@@ -62,6 +61,7 @@ def extractDataFrom(text:str):
     if content and prop:
         data[prop] =info[prop](content.strip())
     return data
+
 if __name__ == '__main__':
     print("started!, awaiting for files changes...")
     if(not os.path.isfile(inserter_filename)):
@@ -76,12 +76,12 @@ if __name__ == '__main__':
         print("modifications detected!")
 
         data = extractDataFrom(Path(inserter_filename).read_text(encoding='utf-8'))
-        if all([x is not None for x in data]):
+        if not all([not x == None for x in data.values()]):
             last_modify = current_mtime
             print("Not finished yet...")
             continue
             
-        with open("dataset.csv","a",newline='') as dataset:
+        with open("dataset.csv","a",newline='', encoding='utf-8') as dataset:
             writer = csv.writer(dataset)
             writer.writerow([data[x] for x in insertOrder])
             print("Data saved!")
