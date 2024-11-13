@@ -1,17 +1,17 @@
-message,type,behavior,spam,problems_quant,comment
-"Assine já,XXXX internet por assinatura",comment,neutral,1,0,spam bot
-"excelente produto!, venho bem embalado e no prazo",comment,positive,0,0,comentário positivo sem nada a reclamar
-"Gostei, mas chegou atrasado",comment,positive,0,1,comentario positivo mas há um relato de problema(entrega)
-pessimo atendimento,comment,negative,0,1,"comentario negativo, com um problema(atendimento)"
-chegou dentro do prazo,comment,positive,0,0,"comentario positivo, sem qualquer tipo de problema"
-HORRÍVEL,comment,negative,0,0,comentario muito negativo(capslock) sem informações adicionais do porque
-"Comprei um Ipeg e recebi isso… o LOJA TEST PROMETEU O REEMBOLSO QUANDO EU DEVOLVESSE O PRODUTO E ATÉ AGORA NADA. Já fiz o BO na delegacia, o jeito vai ser entrar com processo judicial. NÃO COMPREM IPEG NO \n@LojaTest\n#Golpe #Ipeg #lojatest",social,negative,0,3,"consumidor irritado e 3 problemas(reembolso,denuncia,juridico)"
-@LojaTest caiu? não consigo comprar nada lá e nem entrar em contato com o suporte via chat,social,question,0,2,"se trata sobre uma duvida e cita 2 problemas(compra,suporte)"
+message,type,behavior,spam,problems_quant
+"Assine já,XXXX internet por assinatura",comment,neutral,1,0
+"excelente produto!, venho bem embalado e no prazo",comment,positive,0,0
+"Gostei, mas chegou atrasado",comment,positive,0,1
+pessimo atendimento,comment,negative,0,1
+chegou dentro do prazo,comment,positive,0,0
+HORRÍVEL,comment,negative,0,0
+"Comprei um Ipeg e recebi isso… o LOJA TEST PROMETEU O REEMBOLSO QUANDO EU DEVOLVESSE O PRODUTO E ATÉ AGORA NADA. Já fiz o BO na delegacia, o jeito vai ser entrar com processo judicial. NÃO COMPREM IPEG NO \n@LojaTest\n#Golpe #Ipeg #lojatest",social,negative,0,3
+@LojaTest caiu? não consigo comprar nada lá e nem entrar em contato com o suporte via chat,social,question,0,2
 "Prós
 
 Carreira, salario, beneficios, projetos, cultura
 Contras
-Nada a contestar sobre a empresa",worker,positive,0,0,Funcionario elogiando a empresa e nenhuma reclamação
+Nada a contestar sobre a empresa",worker,positive,0,0
 "Prós
 Plano de saúde, PPR e trabalho Híbrido
 Contras
@@ -19,7 +19,7 @@ BPO extremamente sangue suga, carga horária extremamente alta e fora das leis t
 
 Conselho à presidência
 
-O RH deveria parar de fazer propaganda enganosa e focar nas pessoas, fazer pesquisas com quem está na operação e não ficar mentindo com informações e números mentirosos, Toma vergonha RH da Accentuce, vá ouvir quem está lá na operação adoecendo com crise de ansiedade, depressão e etc..",worker,negative,0,3,"Reclamações severa quanto a empresa, vários problemas"
+O RH deveria parar de fazer propaganda enganosa e focar nas pessoas, fazer pesquisas com quem está na operação e não ficar mentindo com informações e números mentirosos, Toma vergonha RH da Accentuce, vá ouvir quem está lá na operação adoecendo com crise de ansiedade, depressão e etc..",worker,negative,0,3
 "Ótimos benefícios, mas falta de confiança e liderança desmotivadora
 
 Prós
@@ -41,7 +41,7 @@ Controle sobre horário de trabalho: Embora a empresa afirme que há flexibilida
 
 Conselho à presidência
 
-A empresa é bastante incoerente como um todo. A capacidade técnica e de comunicação não parecem ser o foco, e sim a obediência e a submissão. Se esse for realmente o objetivo, sugiro mudar a estratégia de branding, pois atualmente vocês atraem pessoas que esperam um ambiente colaborativo, o que acaba resultando em frustração, demissões e na piora da imagem da empresa.",worker,negative,0,3,Em geral demonstra uma perspectiva mais negativa do que positiva sobre a empresa.
+A empresa é bastante incoerente como um todo. A capacidade técnica e de comunicação não parecem ser o foco, e sim a obediência e a submissão. Se esse for realmente o objetivo, sugiro mudar a estratégia de branding, pois atualmente vocês atraem pessoas que esperam um ambiente colaborativo, o que acaba resultando em frustração, demissões e na piora da imagem da empresa.",worker,negative,0,3
 "Empresa muito boa, mas deve ter um melhor olhar para as pessoas e cultura rotineira
 
 Prós
@@ -51,7 +51,7 @@ Contras
 Com o rápido crescimento dos últimos anos, muitas pessoas foram contratadas. E com isso tenho tido experiências negativas com a forma de trabalho de alguns managers, que vem com uma visão de atuação tendendo ao microgerenciamento e quase que negligenciando quase que totalmente a parte de cultura, clima do ambiente do time, e olhar para as pessoas (foco total nas entregas). Tendo postura de abraçar várias demandas sem alinhar e consultar o time sobre viabilidade. O que gera desgaste e frustração. Você tem que dar a sorte de entrar num time que não tenha líderes com essa visão. São experiências muito distintas e opostas dentro da mesma empresa.
 
 Conselho à presidência
-Reforçar a importancia da nossa cultura, que é necessário todos vivenciarem os principios diariamente, e não pensar neles apenas na avaliação anual. Também ter o olhar que não necessariamente a presencialidade vai fortalecer e melhorar esse contexto de cultura. A presencialidade pode ajudar, mas seria muito importante que o time de people atuasse de forma proativa reforçando e sondando como está o processo dos times, sobre o clima e percepção dos princípios culturais, o bem estar geral das pessoas no contexto que elas estão atuando.",worker,positive,0,1,bastante elogios a empresa mas a reclamações sobre microgerenciamento.
+Reforçar a importancia da nossa cultura, que é necessário todos vivenciarem os principios diariamente, e não pensar neles apenas na avaliação anual. Também ter o olhar que não necessariamente a presencialidade vai fortalecer e melhorar esse contexto de cultura. A presencialidade pode ajudar, mas seria muito importante que o time de people atuasse de forma proativa reforçando e sondando como está o processo dos times, sobre o clima e percepção dos princípios culturais, o bem estar geral das pessoas no contexto que elas estão atuando.",worker,positive,0,1
 "Sobrecarga, sem reconhecimento, remuneração de empresa pequena
 
 Prós
@@ -73,7 +73,7 @@ Os outros Seniors e melhores funcionarios que entraram na equipe nos ultimos tem
 
 
 Conselho à presidência
-Olhar e cuidar mais dos funcionarios. Existem diferentes perfis, nao é legal trabalhar 10h+ no dia e sair extremamente cansado e ainda sim estar distante das metas.",worker,negative,0,2,Descreve problemas com a carga de trabalho e reconhecimento mas considera a base da empresa sendo bem interessante
+Olhar e cuidar mais dos funcionarios. Existem diferentes perfis, nao é legal trabalhar 10h+ no dia e sair extremamente cansado e ainda sim estar distante das metas.",worker,negative,0,2
 "Podia melhorar
 
 Prós
@@ -83,14 +83,14 @@ Contras
 Meta, ninguém é robô pra bater meta o tempo todo, é um trabalho onde se locomove muito e pega muito peso, todo dia tem líder chato que nunca executou o trabalho, enchendo o saco o dia inteiro pra bater meta, eles acham que as pessoas não cansam, é exploratório, ridículo. Sem contar o fato de que quando eu trabalhei lá havias carrinhos (pra executar o trabalho) quebrados, um quase bate na minha cara por estar com a alça solta, tem meta até pra bater o ponto no horário, como tantas pessoas vão bater o ponto às 5:45 em ponto?. Uma hora de almoço, sendo que eles determinam o último bipe pra 11:00 e o almoço é justamente às 11;00, é necessário guardar o material usado pra trabalhar, passar pelo portal com uma fila enorme e ir almoçar com uma fila enorme, pois só tem 2 horários de almoço, fora muiiiiiitas outras coisas.
 
 Conselho à presidência
-Coloquem na liderança pessoas que já exerceram o cargo em que elas vão liderar",worker,negative,0,2,Problemas relacionados a administração(microgerenciamento e a metas)
+Coloquem na liderança pessoas que já exerceram o cargo em que elas vão liderar",worker,negative,0,2
 "Excelente empresa
 
 Prós
 Tem ótimos salarios e beneficios, condizente para o tamanho de pressão e responsabilidade
 
 Contras
-Tudo muda o tempo todo, tem que ser muito resiliente e se adaptar bem a mudanças",worker,positive,0,0,o funcionário não demonstra problemas com o modo que a empresa lida e considera que os beneficio e salario estão de acordo com os deveres.
+Tudo muda o tempo todo, tem que ser muito resiliente e se adaptar bem a mudanças",worker,positive,0,0
 "Nota 10
 
 Prós
@@ -100,14 +100,14 @@ Contras
 Excelente! Todo suporte possivel pra quem é iniciante
 
 Conselho à presidência
-Legal",worker,positive,1,0,"Análise positiva, mas pode ser vista como um spam pela contradição no contras"
+Legal",worker,positive,1,0
 "Boa Empresa
 
 Prós
 Bom salario, benefício, bons equipamentos de trabalho
 
 Contras
-Modelo hibrido em cargos que facilmente podem ser tocados fora do escritório",worker,positive,0,1,Visão positiva sobre a empresa citando como problema a falta de home office.
+Modelo hibrido em cargos que facilmente podem ser tocados fora do escritório",worker,positive,0,1
 "Excelente empresa, bom salario e bons beneficios
 Gerente de produtos
 
@@ -119,7 +119,7 @@ Tem um modo estranho de priorizar as coisas, um processo chamado porotajem, que 
 
 Conselho à presidência
 Continuar o trabalho que já fazem.
-Loja Test tem problemas como qualquer empresa, mas busca constantemente e incansavelmente melhorar.",worker,positive,0,1,"Visão positiva sobre a empresa, cita como problema a priorização"
+Loja Test tem problemas como qualquer empresa, mas busca constantemente e incansavelmente melhorar.",worker,positive,0,1
 "Ok, Mas..
 Representante de envios 2
 
@@ -136,7 +136,7 @@ Líderes não gostam de pessoas que tem mente crítica e logo mostram o que est�
 Médico local não tem mínima idéia de medicina básica, deve ter feito telecurso só pode.
 
 Conselho à presidência
-Dêem valor a quem trabalha de verdade e parem de subir de cargo pessoas só pq são amigas da liderança. Isso vale principalmente aos empilhadeiristas do ET01. Preguiçosos, desatentos, lentos e mesmo assim recebem tanto quanto um PS, porém só passam a mão na cabeça deles.",worker,negative,0,3,"O funcíonario dá alguns elogios, mas de forma geral cita diversos problemas(reconhecimento, VR, medico, organização)"
+Dêem valor a quem trabalha de verdade e parem de subir de cargo pessoas só pq são amigas da liderança. Isso vale principalmente aos empilhadeiristas do ET01. Preguiçosos, desatentos, lentos e mesmo assim recebem tanto quanto um PS, porém só passam a mão na cabeça deles.",worker,negative,0,3
 "Salario OK
 Analista pleno
 
@@ -147,6 +147,14 @@ Contras
 Salários discrepantes, quem tem mais tempo de casa está em uma faixa salarias mais baixa do que novos entrantes.
 
 Conselho à presidência
-Melhora na gestão como um todo é necessario ter um suporte maior ao longo do tempo, além de buscar uma equiparação salarial para evitar uma desmotivação do pessoal.",worker,positive,0,1,Comêntario positivo citando salário injusto como sendo um problema.
-"GOSTEI MUITO DO PRODUTO! TEM ÓTIMA QUALIDADE, E FACILITA MUITO A APLICAÇÃO DO GEL.",comment,positive,0,0,"Apenas elogios, nesse caso capslock foi usado para reforçar a ideia"
-"Não compra este produto, pois o mesmo veio com os botões travados e ao tentar ligar o mesmo nem ligou. Péssima qualidade",comment,negative,0,1,O usuario se demonstra irritado e a um problema com o produto"
+Melhora na gestão como um todo é necessario ter um suporte maior ao longo do tempo, além de buscar uma equiparação salarial para evitar uma desmotivação do pessoal.",worker,any,0,1
+"GOSTEI MUITO DO PRODUTO! TEM ÓTIMA QUALIDADE, E FACILITA MUITO A APLICAÇÃO DO GEL.",comment,positive,0,0
+"Não compra este produto, pois o mesmo veio com os botões travados e ao tentar ligar o mesmo nem ligou. Péssima qualidade",comment,negative,0,1
+Eu estou muito satisfeito com a compra. A entrega foi rápida e o produto é muito bom. Eu recomendo a todos!,comment,positive,0,0
+O produto não é bom. O preço é muito alto e a qualidade é ruim. Eu não recomendo a ninguem,comment,negative,0,2
+"Esse celular é espetacular até o momento não tenho o que reclamar, quem estiver querendo comprar eu recomendo. Mais uma vez estou muito satisfeito e quero agradecer a todos os envolvidos na logística do Loja test.",comment,positive,0,0
+Produto excelente.,comment,positive,0,0
+"Simplesmente lindíssimo, excelente produto, super resistente,podem comprar sem medo,já tô até querendo comprar outra 😍😍.",comment,positive,0,0
+"Propaganda enganosa, não veio conforme o vídeo publicado, pedi a voltagem 110wt e mandaram voltagem 220wt. Loja despreparada para atender o cliente.",social,negative,0,1
+"Os leds nao veio conexão um com o outro, vou ter que ligar um em cada tomada, frente da minha casa da 28 metros, vou ter que acabar comprando mais extensão, foi erro na discrição na venda do produto….",comment,negative,0,1
+"Um dos produtos queimou ao ligar na tomada. Matéria-prima utilizada na confecção do material é de baixa qualidade, em especial os conectores dos fios. Não recomendo a compra.",comment,negative,0,1
