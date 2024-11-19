@@ -1,5 +1,5 @@
 from abc import ABC
-
+from src.dependencyDescriber import DependencyDescriber
 
 def raiseInvalStr(obj, propName):
     if not propName in obj:
@@ -14,15 +14,24 @@ class ManagerBase(ABC):
         cls._builders = {}
     def __init__(self) -> None:
         super().__init__()
-        self._items = []
+        self._items:list[DependencyDescriber] = []
 
-    def add(self, obj):
+    def add(self, obj:DependencyDescriber):
         self._items.append(obj)
     
     @classmethod
     def addInstanceable(cls,name, instanceable):
         cls._builders[name] = (lambda config: instanceable(**config)) if isinstance(instanceable,type) else instanceable
     
+    def dependencies(self):
+        deps = []
+        for item in self._items:
+            ret = item.dependencies()
+            if not ret:
+                continue
+            deps.extend([ret] if isinstance(ret, str) else ret)
+        return deps
+            
     @classmethod
     def initWithConfig(cls,config):
         if not 'data' in config:

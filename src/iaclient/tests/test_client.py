@@ -9,7 +9,10 @@ class FakeClient(IAClient):
     def __init__(self):
         super().__init__("test-client")
         self.countReqs = 0
-
+    def _initDependecies(self):
+        return None
+    def dependencies(self) -> str | List[str]:
+        return ''
     def _separateCommentsBatch(self,comments: List[Comment]) -> List[List[Comment]]:
         lot1 = comments[::2]
         lot2 = comments[1::2]

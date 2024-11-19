@@ -1,8 +1,6 @@
 from src.comment import Comment
 from .collectorBase import CollectorBase
 import os.path as path
-import csv
-
 
 class CollectorCSV(CollectorBase):
     def __init__(self,path,delimiter = ',',header = None,encoding = 'utf-8') -> None:
@@ -15,6 +13,7 @@ class CollectorCSV(CollectorBase):
         return path.exists(self.csvPath)
     
     def collect(self) -> list[Comment]:
+        import csv
         comments = []
         header = self.header
         with open(self.csvPath,newline='',encoding='utf-8') as fileCSV:
@@ -30,4 +29,7 @@ class CollectorCSV(CollectorBase):
                     commentDict["origin"] = "CSV"
                 comments.append(Comment.createFromDict(commentDict))
         return comments
-    
+    def dependencies(self):
+        return []
+    def _initDependecies(self):
+        import csv

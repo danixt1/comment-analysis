@@ -6,7 +6,7 @@ def run(path:str | None = None):
     if path == None:
         path = 'config.json'
     config = {}
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     with open(path,'r') as f:
         import json
         config = json.load(f)

@@ -19,9 +19,7 @@ Options:
 
   start          start execution with the instructions in config.json
 
-  install        install all dependencies needed to execute pipeline from config.json
-    -p --print     don't install, but only output the command to install.
-
+  deps        output the pip install command with the dependencies of the project
   -c --config    set the config file to by used."""
 # Check if no arguments are provided
 if len(args) == 0:
@@ -41,7 +39,7 @@ if 'start' in args:
     import src.pipeline as pipeline
     pipeline.run(config)
     exit()
-if 'install' in args:
+if 'deps' in args:
     import src.installer as install
     install.run(config)
     exit()
