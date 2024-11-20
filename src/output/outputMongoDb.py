@@ -1,3 +1,5 @@
+from pymongo import MongoClient
+from bson import ObjectId
 from src.comment import Comment
 from .outputBase import OutputBase
 from src.iaclient.process import Process
@@ -12,14 +14,8 @@ class OutputMongoDb(OutputBase):
             'process_collection': process_collection,
             'comments_collection': comments_collection
         }
-    def _initDependecies(self):
-        from pymongo import MongoClient
-        from bson import ObjectId
-
-    def dependencies(self) -> str | list[str]:
-        return 'pymongo'
+        
     def connect(self):
-        from pymongo import MongoClient
         config = self.config
         self.client = MongoClient(self.url)
         db = self.client[config['db']]
@@ -27,7 +23,6 @@ class OutputMongoDb(OutputBase):
         self.process_collection = db[config['process_collection']]
         return True
     def sendData(self, comments: list[Comment],processResults:list[Process]):
-        from bson import ObjectId
         self.connect()
         toInsert = [dict(comment) for comment in comments]
         processInsert = [x.toDict() for x in processResults]

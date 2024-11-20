@@ -28,7 +28,6 @@ def db_url(tmp_path_factory):
 def test_simple_mapping(db_url):
     convert_date_gmt = lambda date_str: int(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
     collector = CollectorDBAPI(db_url,"comments",[("content","message"),("date_gmt","timestamp",convert_date_gmt)])
-    collector._initDependecies()
     data = collector.collect()
     assert len(data) == 2
     assert data[0].message == "This a test comment"

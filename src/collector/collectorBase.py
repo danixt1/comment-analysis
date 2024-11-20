@@ -1,8 +1,7 @@
-from abc import abstractmethod
-from src.dependencyDescriber import DependencyDescriber
+from abc import ABC,abstractmethod
 from ..comment import Comment
 
-class CollectorBase(DependencyDescriber):
+class CollectorBase(ABC):
     @abstractmethod
     def collect(self) -> list[Comment]:
         pass

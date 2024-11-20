@@ -37,9 +37,8 @@ def db_url(tmp_path_factory):
 
 def test_collectorWordPress(db_url):
     convert_date_gmt = lambda date_str: int(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-    collector = CollectorWordPress('', '','','',connector='sqlite')
-    collector.dbUrl = db_url
-    collector._initDependecies()
+    collector = CollectorWordPress('', '','','')
+    collector.url = db_url
     data = collector.collect()
 
     assert len(data) == 2

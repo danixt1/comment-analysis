@@ -1,8 +1,7 @@
-from abc import abstractmethod
-from src.dependencyDescriber import DependencyDescriber
+from abc import ABC, abstractmethod
 from ..comment import Comment
 
-class OutputBase(DependencyDescriber):
+class OutputBase(ABC):
     @abstractmethod
     def sendData(self,comments:list[Comment],processResults:list):
         pass

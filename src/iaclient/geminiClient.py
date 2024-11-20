@@ -7,9 +7,10 @@ from .requestProcess import RequestProcess
 import logging
 import os
 import json
+import google.generativeai as genai
 logger = logging.getLogger(__name__)
 
-COMMENT_LEN_LIMIT = 1000
+COMMENT_LEN_LIMIT = 10000
 schema = {
     "type":"ARRAY",
     "items":{
@@ -29,17 +30,13 @@ class GeminiClient(IAClient):
     KNOW_PROBLEMS = ['delivery','damaged']
     def __init__(self,model = "gemini-1.5-flash"):
         super().__init__('google:'+model)
-        self.modelName = model
-    def _initDependecies(self):
-        import google.generativeai as genai
         genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-        self.model = genai.GenerativeModel(self.modelName)
+
+        self.model = genai.GenerativeModel(model)
+
         self.generation_config=genai.GenerationConfig(
             response_mime_type="application/json", response_schema=schema
         )
-    def dependencies(self) -> str | list[str]:
-        return 'google-generativeai'
-    
     def _separateCommentsBatch(self, comments: list[Comment]) -> list[list[Comment]]:
         batchs = []
         partionWorkers = {"len":0,"comments":[]}

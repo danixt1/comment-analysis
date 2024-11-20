@@ -1,17 +1,17 @@
 from .clientObserver import ClientObserver
-from abc import abstractmethod
+from abc import ABC,abstractmethod
 from .promptInfo import PromptInfo
 from .process import Process
 from .requestProcess import RequestProcess
 from ..comment import Comment
-from src.dependencyDescriber import DependencyDescriber
+
 import logging
 import time
 
 logger = logging.getLogger(__name__)
 
 
-class IAClient(DependencyDescriber):
+class IAClient(ABC):
     """
     Processing flux:
     1. analyze: analyze is called (DON'T overide)
