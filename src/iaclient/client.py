@@ -24,7 +24,7 @@ class IAClient(DependencyDescriber):
     def __init__(self,clientName):
         self.observers:list[ClientObserver] = []
         self.clientName = clientName
-        logger.debug(f'initializing IA client {clientName}')
+        logger.info(f'initializing IA client {clientName}')
 
 
     @abstractmethod
@@ -54,7 +54,7 @@ class IAClient(DependencyDescriber):
             obs.notify_batchs_generated(batchs)
 
         def requestData(batch: list[Comment],prompt: PromptInfo,index:int):
-            logger.debug(f"client {self.clientName}:requesting analyze for batch with {len(batch)} comments...")
+            logger.info(f"client {self.clientName}:requesting analyze for batch with {len(batch)} comments...")
             requestData = RequestProcess( prompt, batch)
             self._makeRequestToAi(str(prompt),requestData)
             requestData.finish()
@@ -66,6 +66,7 @@ class IAClient(DependencyDescriber):
                     return "retry"
                 logger.error(f"client {self.clientName}:Critical error process finished, error {error}, mgs:{msg}")
                 return False
+            
             data = requestData.data
             for index in range(len(data)):
                 message,msgData = batch[index],data[index]
@@ -83,15 +84,14 @@ class IAClient(DependencyDescriber):
                 obs.notify_new_prompt_generated(prompt)
             resultInfo = requestData(batch,prompt,index)
             while(resultInfo == "retry"):
-                time.sleep(1)
+                time.sleep(1 + retry)
                 retry+=1
                 if retry == maxRetrys:
                     logger.error(f"client {self.clientName}:MAX RETRY REACHED")
                     for obs in observers:
                         obs.notify_max_retrys_reached(batch,prompt,index)
-                    return False
-            if not resultInfo:
-                return False
+                    break
+                resultInfo = requestData(batch,prompt,index)
         process.finish()
         return process
     
