@@ -7,11 +7,12 @@ For now only gemini is supported.
 The actual supported output is mongoDB.
 
 # Installing
->Temporary removed requirements.txt(unstable) use:
-
+Get the pip installation need using:
 ```shell
-pip install google-generativeai python-dotenv mysql-connector-python SQLAlchemy pymongo
+python analyzer.py deps
 ```
+The returned pip is related to the pipeline in `config.json`
+
 dev:
 ```shell
 pip install pytest
@@ -69,11 +70,3 @@ connect to a SQL DB.
     "comments_collection":"behavior-analysis-collection.(default)"
 }
 ```
-
-# Dependency Usage mapping:
-
-Show where every dependency is being used.
-
-collectorDBAPI = SQLAlchemy #if using only sqlite
-collectorMySql = mysql-connector-python SQLAlchemy
-geminiClient = google-generativeai
