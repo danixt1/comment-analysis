@@ -29,9 +29,6 @@ class GeminiClient(IAClient):
     KNOW_PROBLEMS = ['delivery','damaged']
     def __init__(self,model = "gemini-1.5-flash"):
         super().__init__('google:'+model)
-        import google.generativeai as genai
-        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-
         self.modelName = model
     def _initDependecies(self):
         import google.generativeai as genai
