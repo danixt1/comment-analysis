@@ -13,7 +13,7 @@ def getCmdIndex(abrev,ext):
     return None
 def haveCmd(abrev, ext):
     return not getCmdIndex(abrev, ext) == None
-HELP = """Usage: analyzer [start|install] [cmds]
+HELP = """Usage: analyzer [start|deps] [cmds]
 Options:
   -h, --help     display this help and exit
 
@@ -40,6 +40,6 @@ if 'start' in args:
     pipeline.run(config)
     exit()
 if 'deps' in args:
-    import src.installer as install
-    install.run(config)
+    import src.dependency as deps
+    deps.run(config)
     exit()
