@@ -1,6 +1,3 @@
-import time
-#TODO make id being hashs
-#TODO make a variable to reference the external ids connections.
 class Comment:
     _actId =0
     def __init__(self,message:str,msgType:str,origin:str,id:str | int | None= None,timestamp = None,process = None):
@@ -17,6 +14,12 @@ class Comment:
         return self.message
     @staticmethod
     def createFromDict(dictData:dict):
+        import warnings
+        warnings.warn(
+            "createFromDict is deprecated and will be removed in a future version",
+            DeprecationWarning,
+            stacklevel=2)
+        
         check = lambda cond,fals: dictData[cond] if cond in dictData else fals
         if not "message" in dictData:
             raise KeyError("Expected message property")
@@ -39,6 +42,13 @@ class Comment:
         self.dict = self.toDict()
         return iter(self.dict.items())
 
+    def getData(self):
+        if len(self.process) == 0:
+            return None
+        return self.process[-1]['data']
+    
+    def asdict(self):
+        return self.toDict()
     def toDict(self):
         return {
             "origin_id":self.id,
