@@ -1,15 +1,17 @@
 class Comment:
     _actId =0
-    def __init__(self,message:str,msgType:str,origin:str,id:str | int | None= None,timestamp = None,process = None):
+    def __init__(self,message:str,msgType:str = None,origin:str = None,id:str | int | None= None,timestamp = None,process = None,**kwargs):
+        local_id = kwargs.get('local_id') if kwargs.get('local_id') is not None else Comment._actId
         self.timestamp = timestamp
-        self.id = id
+        self.id = id or kwargs.get('origin_id')
         self.message =message
-        self.type =msgType
-        self.localId = Comment._actId
+        self.type =msgType or kwargs.get('type')
+        self.localId =local_id
         self.origin = origin
         self.process = process or []
         self.haveAdditionalData = len(self.process) > 0
-        Comment._actId += 1
+        if self.localId >= Comment._actId:
+            Comment._actId = self.localId + 1
     def __str__(self):
         return self.message
     @staticmethod
@@ -33,7 +35,10 @@ class Comment:
             check('timestamp',None),
             check('process',None)
         )
-
+    def getCurrentData(self):
+        if len(self.process) == 0:
+            return None
+        return self.process[-1]['data']
     def attachInfo(self,info,processName:str,process_id:int):
         self.haveAdditionalData = True
         self.process.append({"name":processName,"data":info,"process_id":process_id})
