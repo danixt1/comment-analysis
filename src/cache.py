@@ -1,64 +1,62 @@
-from src.comment import Comment
-import string
 import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
-chars = string.ascii_letters + string.digits
 
-def makeHash(f = None):
-    if f:
-        sha1 = hashlib.sha1(f.encode('utf-8'))
-        return sha1.hexdigest()
-    import random
-    return ''.join(random.choice(chars) for _ in range(10))
+def makeHash(f):
+    sha1 = hashlib.sha1(f.encode('utf-8'))
+    return sha1.hexdigest()
 
 class Cache:
-    def __init__(self):
+    timestamp =int(datetime.now().timestamp())
+    def __init__(self,subpath:str):
         self.cache = {}
-        self.timestamp =int(datetime.now().timestamp())
         path = Path("cache")
-        path.mkdir(exist_ok=True)     
+        path.mkdir(exist_ok=True) 
+        path = path / subpath
+        path.mkdir(exist_ok=True)    
         self.path = path
 
-    def _makeCache(self, fromConfig,t):
+    def _makeCache(self, fromConfig):
         hashValue = makeHash(json.dumps(fromConfig, sort_keys=True))
-        path = self.path / f"{self.timestamp}-{hashValue}-{t}.json"
+        path = self.path / f"{self.timestamp}-{hashValue}.json"
         path.touch(exist_ok=True)
         return path
     
-    def addFromCollection(self, comments: list[Comment], collectorConfig:dict):
-        path = self._makeCache(collectorConfig,'collector')
-        dicts = [x.asdict() for x in comments]
+    def add(self, config:dict,data):
+        path = self._makeCache(config)
         with open(path, "w") as f:
-            f.write(json.dumps(dicts, sort_keys=True))
+            f.write(json.dumps(data, sort_keys=True))
 
-    def addData(self,data,processConfig:dict):
-        path = self._makeCache(processConfig,'data_process')
-        with open(path, "w") as f:
-            f.write(str(data))
-    def get(self,config:dict):
-        hashValue = makeHash(json.dumps(config, sort_keys=True))
-        matchedFiles:list[Path] = []
+    def deleteExpiredCache(self,expireTime):
+        expiredIn = self.timestamp - expireTime
         for path in self.path.iterdir():
-            name = path.name.split('-')
-            if hashValue == name[1]:
-                matchedFiles.append(path)
+            timestamp = int(path.name.split('-')[0])
+            if timestamp < expiredIn:
+                path.unlink()
+
+    def get(self,config:dict):
+        hashValue = makeHash(json.dumps(config, sort_keys=True)) + '.json'
+        matchedFiles:list = []
+        for path in self.path.iterdir():
+            data = path.name.split('-')
+            if(len(data) != 2):
+                continue
+            data[0] = int(data[0])
+            timestamp,fileHash = data
+            if hashValue == fileHash:
+                matchedFiles.append([timestamp,fileHash,path])
         selected =None
         if len(matchedFiles) == 0:
             return None
-        for matched in matchedFiles:
-            timestamp = int(matched.name.split('-')[0])
+        timestamp = matchedFiles[0][0]
+        for actTimestamp,fileHash,matched in matchedFiles:
             if not selected:
                 selected = matched
-            elif timestamp > int(selected.name.split('-')[0]):
+            elif timestamp < actTimestamp:
+                timestamp = actTimestamp
                 selected = matched
         if not selected:
             return None
         data = json.loads(selected.read_text())
-        typeCache = selected.name.split('-')[2]
-        if typeCache == 'collector.json':
-            comments = [Comment(**x) for x in data]
-            return comments
-        if typeCache == 'data_process.json':
-            return data
+        return data
