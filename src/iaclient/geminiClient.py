@@ -57,7 +57,7 @@ class GeminiClient(IAClient):
         return batchs
     def _generatePrompt(self, comments: list[Comment]) -> PromptInfo:
         prompt = PromptInfo('worker' if comments[0].type == 'worker' else 'default')
-        formatedComments ="".join([f"<comment>{str(x)}</comment>" for x in comments])
+        formatedComments ="".join([f"<comment>{str(x)}</comment>\n" for x in comments])
         if comments[0].type == 'worker':
             return prompt.format(formatedComments)
         return prompt.format(self.KNOW_PROBLEMS,formatedComments)
