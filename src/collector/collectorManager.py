@@ -17,10 +17,10 @@ class CollectorManager(ManagerBase):
         logger.info(f"Collecting comments from {len(self._items)} collectors.")
         for collector in self._items:
             if not self.skipOnFailure:
-                collected.extend(collector.collect())
+                collected.extend(collector.collectUsingCache())
                 continue
             try:
-                collected.extend(collector.collect())
+                collected.extend(collector.collectUsingCache())
             except:
                 continue
         return collected

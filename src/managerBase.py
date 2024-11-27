@@ -1,5 +1,5 @@
 from abc import ABC
-
+from src.cache import Cache
 
 def raiseInvalStr(obj, propName):
     if not propName in obj:
@@ -24,7 +24,7 @@ class ManagerBase(ABC):
         cls._builders[name] = (lambda config: instanceable(**config)) if isinstance(instanceable,type) else instanceable
     
     @classmethod
-    def initWithConfig(cls,config):
+    def initWithConfig(cls,config,cache:Cache):
         if not 'data' in config:
             raise KeyError('data not found in config')
         data = config['data']
@@ -32,7 +32,6 @@ class ManagerBase(ABC):
         if not isinstance(data, list):
             raise TypeError('data must be a array')
         instance = cls(**config)
-        
         for instanceConfig in data:
             if not isinstance(instanceConfig, dict):
                 raise TypeError('data must be a object')
@@ -43,5 +42,6 @@ class ManagerBase(ABC):
             if not name in cls._builders:
                 raise KeyError(f'instance "{name}" not found in instanceables list, supported:{",".join(cls._builders.keys())}.')
             item = cls._builders[name](instanceConfig)
+            item._cache = cache.cacheWithPrefix(instanceConfig)
             instance.add(item)
         return instance

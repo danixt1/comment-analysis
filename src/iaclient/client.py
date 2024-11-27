@@ -43,10 +43,41 @@ class IAClient(ABC):
     @abstractmethod
     def _makeRequestToAi(self,prompt:PromptInfo,request:RequestProcess):
         pass
+
+    def __fromCache(self,comments:list[Comment]):
+        cached = self._cache.get()
+        if not cached:
+            return comments
+        cached = {id:data for id,data in cached}
+        ret = []
+        for comment in comments:
+            localId = comment.localId
+            if localId in cached:
+                comment.process.append(cached[localId])
+                continue
+            ret.append(comment)
+        return ret
+    
+    def __addToCache(self,comments:list[Comment]):
+        cache = []
+        for index in range(len(comments)):
+            process = comments[index].getLastProcess()
+            if process == None:
+                continue
+            cache.append([comments[index].localId,process])
+        self._cache.add(cache)
+
     # TODO make possibility to do async
     def analyze(self,comments: list[Comment]):
         process = Process(self.clientName)
         observers = self.observers
+
+        if hasattr(self, "_cache"):
+            comments = self.__fromCache(comments)
+            if len(comments) == 0:
+                logger.info(f"client {self.clientName}:all comments already processed")
+                process.finish()
+                return process
         
         batchs = self._separateCommentsBatch(comments)
         batchs = [x for x in batchs if len(x)]
@@ -68,11 +99,14 @@ class IAClient(ABC):
                 return False
             
             data = requestData.data
+
             for index in range(len(data)):
                 message,msgData = batch[index],data[index]
                 for obs in observers:
                     obs.notify_data_added_to_comment(data,message)
                 message.attachInfo(msgData,self.clientName,process.id)
+            if hasattr(self, "_cache"):
+                self.__addToCache(batch)
             return True
 
         for batch in batchs:
