@@ -1,0 +1,96 @@
+[
+    {
+        "lang":"pt",
+        "message":"Assine já ligue XXXX-XXX e tenha a melhor internet por assinatura do brasil!.",
+        "spam":true,
+        "type":"comment",
+        "behavior":"-"
+    },
+    {
+        "lang":"pt",
+        "tags":["product","physical"],
+        "messages":
+        [   
+            "[colchão|celular|computador] [muito bom|maravilhoso]!",
+            "a bateria dura o dia todo ótimo para o dia a dia",
+            "A [geladeira|batedeira] é [linda|maravilhosa]! e não faz barulho",
+            "o guarda roupa é bastante espaçoso"
+        ],
+        "behavior":"positive",
+        "type":"comment",
+        "spam":false
+    },
+    {
+        "lang":"pt",
+        "tags":["product","generic"],
+        "messages":["Produto [muito bom|maravilhoso|excelente]!",
+        "gostei muito!","bom"],
+        "behavior":"positive",
+        "type":"comment",
+        "spam":false
+    },
+    {
+        "lang":"pt",
+        "tags":["product","physical","delivery"],
+        "messages":["gostei bastante da [geladeira|air fryer] mas demorou muito..."],
+        "behavior":"positive",
+        "type":"comment",
+        "spam":false,
+        "problems":["delivery"]
+    },
+    {
+        "lang":"pt",
+        "tags":["product","generic"],
+        "messages":["[n|não] gostei","esperava mais..","ruim","esperava mais..."],
+        "behavior":"negative",
+        "type":"comment",
+        "spam":false
+    },
+    {
+        "lang":"pt",
+        "tags":["company"],
+        "messages":[
+            "é oficial\no COMPANY_NAME contratou o flash(image: image with words typed in green:\"Chegará gratís amanhã\")",
+            "a COMPANY_NAME tem o melhor preços comparadas a outras empresas!"
+        ],
+        "type":"social",
+        "behavior":"positive"
+    },
+    {
+        "lang":"pt",
+        "tags":["product","quality","physical"],
+        "messages":[
+            "Não [gostei|recomendo], a qualidade é muito [baixa|ruim]!",
+            "etragou em 5 meses...","péssima qualidade..."],
+        "behavior":"negative",
+        "type":"comment",
+        "spam":false,
+        "min_problems":1
+    },
+    {
+        "lang":"pt",
+        "tags":["product","physical","missing_part"],
+        "messages":["[veio|chegou] sem uma peca","fico faltando a fonte"],
+        "behavior":"negative",
+        "type":"comment",
+        "spam":false,
+        "min_problems":1
+    },
+    {
+        "lang":"pt",
+        "tags":["product","physical","delivery"],
+        "messages":["demorou muito pra chegar","mais de 2 meses pra chegar, [não|n] compro mais nessa loja!"],
+        "behavior":"negative",
+        "type":"comment",
+        "spam":false,
+        "problems":["delivery"]
+    },
+    {
+        "lang":"pt",
+        "tags":["company"],
+        "messages":["Prós\n\nCarreira, [salario|remuneração], beneficios, projetos, cultura\nContras\nNada a contestar sobre a empresa",
+        "Ótimos salários a matriz é bem legal"],
+        "behavior":"positive",
+        "type":"worker"
+    }
+]
