@@ -2,9 +2,8 @@ from pathlib import Path
 import json
 import re
 import itertools
-from datetime import datetime
 import random
-init = datetime.now()
+
 commentsData = json.loads((Path(__file__).parent / 'comments_data.json').read_text(encoding='utf-8'))
 
 MATCH_POSITIONS = r"\[([^\]]+)\]"
@@ -81,7 +80,3 @@ def makeCSV(outFile:str,config:dict = {}):
         for row in data:
             del row['process']
             writer.writerow(row)
-
-data = makeData(100)
-#print((datetime.now() - init).microseconds)
-makeCSV('test.csv', {'limit':100})
