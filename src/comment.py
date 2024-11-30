@@ -9,33 +9,15 @@ class Comment:
         self.localId =local_id or hash(str(self.origin) + str(self.id) + self.message)
         self.process = process or []
         self.haveAdditionalData = len(self.process) > 0
+        
     def __str__(self):
         return self.message
-    @staticmethod
-    def createFromDict(dictData:dict):
-        import warnings
-        warnings.warn(
-            "createFromDict is deprecated and will be removed in a future version",
-            DeprecationWarning,
-            stacklevel=2)
-        
-        check = lambda cond,fals: dictData[cond] if cond in dictData else fals
-        if not "message" in dictData:
-            raise KeyError("Expected message property")
-        if not "origin" in dictData:
-            raise KeyError("origin need to by specified")
-        return Comment(
-            dictData['message'],
-            check('type',"comment"),
-            dictData['origin'],
-            check('id',None),
-            check('timestamp',None),
-            check('process',None)
-        )
+    
     def getLastProcess(self):
         if len(self.process) == 0:
             return None
         return self.process[-1]
+    
     def attachInfo(self,info,processName:str,process_id:int):
         self.haveAdditionalData = True
         self.process.append({"name":processName,"data":info,"process_id":process_id})
@@ -51,6 +33,7 @@ class Comment:
     
     def asdict(self):
         return self.toDict()
+    
     def toDict(self):
         return {
             "origin_id":self.id,
@@ -61,3 +44,53 @@ class Comment:
             "origin":self.origin,
             "process":self.process
         }
+
+class CommentTest(Comment):
+    def __init__(self,expected:dict, **kwargs):
+        super().__init__(**kwargs)
+        self.expected = expected
+        self.result = None
+
+    def getScore(self):
+        if self.result is None:
+            return None
+        score = 0
+        maxScore = 1
+        problemsNotDetected = []
+        expected = self.expected
+        result = self.result
+
+        expectedBehavior = expected['behavior']
+        expectedSpam = expected['spam']
+
+        resultBehavior = result['behavior']
+        resultSpam = result['spam'] if 'spam' in result else False
+        resultProblems = result['problems'] if 'problems' in result else []
+
+        if not expectedBehavior == '-':
+            maxScore += 1
+            
+        if expectedBehavior == resultBehavior:
+            score += 1
+
+        if resultSpam == expectedSpam:
+            score += 1
+
+        if expected['min_problems']:
+            maxScore += expected['min_problems']
+            score += len(resultProblems)
+
+        for problem in expected['problems']:
+            maxScore += 1
+            if problem in resultProblems:
+                score += 1
+            else:
+                problemsNotDetected.append(problem)
+
+        return dict(
+            score=(1 /maxScore) * score,
+            notDetected=problemsNotDetected,
+        )
+    
+    def attachInfo(self, info, processName: str, process_id: int):
+        self.result = info
