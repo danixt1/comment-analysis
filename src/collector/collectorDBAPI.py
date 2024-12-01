@@ -28,6 +28,6 @@ class CollectorDBAPI(CollectorBase):
                     dictComments[prop] = valueToSet
                 if not 'origin' in dictComments:
                     dictComments['origin'] = "SQL:"+self.table
-                comments.append(Comment.createFromDict(dictComments))
+                comments.append(Comment(**dictComments))
         return comments
     

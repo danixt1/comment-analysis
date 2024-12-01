@@ -28,6 +28,6 @@ class CollectorCSV(CollectorBase):
                     commentDict[header[index]] = dataCell
                 if not "origin" in commentDict:
                     commentDict["origin"] = "CSV"
-                comments.append(Comment.createFromDict(commentDict))
+                comments.append(Comment(**commentDict))
         return comments
     
