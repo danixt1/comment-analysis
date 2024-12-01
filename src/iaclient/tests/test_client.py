@@ -29,8 +29,7 @@ def test_client_flux():
     client = FakeClient()
     comments = [Comment('def','comment','test') for x in range(6)]
     comments[0].message = "prompt1"
-    process = client.analyze(comments)
-    result = process.toDict()
+    result = client.analyze(comments)
     assert len(result['requests']) == 2
     assert len(result['batchs']) == 2
     assert result['tokens']['output'] == 10
