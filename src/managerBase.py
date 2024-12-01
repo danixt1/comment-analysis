@@ -24,7 +24,7 @@ class ManagerBase(ABC):
         cls._builders[name] = (lambda config: instanceable(**config)) if isinstance(instanceable,type) else instanceable
     
     @classmethod
-    def initWithConfig(cls,config,cache:Cache):
+    def initWithConfig(cls,config,cache:Cache = None):
         if not 'data' in config:
             raise KeyError('data not found in config')
         data = config['data']
@@ -42,6 +42,7 @@ class ManagerBase(ABC):
             if not name in cls._builders:
                 raise KeyError(f'instance "{name}" not found in instanceables list, supported:{",".join(cls._builders.keys())}.')
             item = cls._builders[name](instanceConfig)
-            item._cache = cache.cacheWithPrefix(instanceConfig)
+            if cache != None:
+                item._cache = cache.cacheWithPrefix(instanceConfig)
             instance.add(item)
         return instance
