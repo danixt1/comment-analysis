@@ -127,7 +127,7 @@ class IAClient(ABC):
                     break
                 resultInfo = requestData(batch,prompt,index)
         process.finish()
-        return process
+        return process.toDict()
     
     def addObserver(self,observer: ClientObserver):
         self.observer = observer
