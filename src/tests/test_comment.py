@@ -1,4 +1,4 @@
-from ..comment import Comment
+from ..comment import Comment,CommentScorer
 
 def test_generate_simple_dict():
     message = 'msgTest'
@@ -32,6 +32,52 @@ def test_get_message_using_str():
     comment.localId = 0
     assert message == str(comment)
 
+def test_commentScorer_behavior():
+    data = makeBasicScoreData()
+    scorer = CommentScorer(data,message="test")
+    scorer.attachInfo({'spam':False,"behavior":'positive'}, 'testProcess/1.0', 1)
+    assert scorer.getScore()['score'] == 1, "CommentScorer don't return the expected score"
+
+def test_commentScorer_behavior_false():
+    data = makeBasicScoreData()
+    scorer = CommentScorer(data,message="test")
+    scorer.attachInfo({"behavior":'negative'}, 'testProcess/1.0', 1)
+    assert scorer.getScore()['score'] == 0, "CommentScorer don't return the expected score"
+
+def test_commentScorer_spam():
+    data = makeBasicScoreData()
+    data['spam'] = True
+    scorer = CommentScorer(data,message="test")
+    scorer.attachInfo({'spam':True,"behavior":'positive'}, 'testProcess/1.0', 1)
+    assert scorer.getScore()['score'] == 1, "CommentScorer don't return the expected score"
+
+def test_commentScorer_all_problems_detected():
+    problems = ['problem1','other','anotherProblem']
+    data = makeBasicScoreData()
+    data['problems'] = problems
+    scorer = CommentScorer(data,message="test")
+    scorer.attachInfo({'spam':False,"behavior":'positive','problems':problems}, 'testProcess/1.0', 1)
+    assert scorer.getScore()['score'] == 1, "CommentScorer don't returned 1"
+
+def test_commentScorer_problem_missing():
+    data = makeBasicScoreData()
+    data['problems'] = ['problem1','other','anotherProblem']
+    data['behavior'] = '-'
+    scorer = CommentScorer(data,message="test")
+    scorer.attachInfo({'spam':False,"behavior":'positive','problems':['problem1','fa','anotherProblem']}, 'testProcess/1.0', 1)
+    res =scorer.getScore()
+    assert res['not_detected'] == ['other'], "not detected problem not is passed in output"
+    assert res['score'] == 1 /3 * 2, "CommentScorer don't returned expected score"
+
+def test_commentScorer_full():
+    data = makeBasicScoreData()
+    data['problems'] = ['problem1','other','anotherProblem2']
+    data['spam'] = True
+    scorer = CommentScorer(data,message="test")
+    scorer.attachInfo({'spam':False,"behavior":'positive','problems':['problem1','fa','anotherProblem']}, 'testProcess/1.0', 1)
+    res =scorer.getScore()
+    assert res['not_detected'] == ['other','anotherProblem2'], "not detected problem not is passed in output"
+    assert res['score'] == 1 /5 * 2, "CommentScorer don't returned 1"
 def makeBasicDict(message = 'msgTest',msgType = 'comment'):
     return {
         "origin_id":None,
@@ -41,4 +87,11 @@ def makeBasicDict(message = 'msgTest',msgType = 'comment'):
         "origin":"test",
         "process":[],
         'timestamp':None
+    }
+def makeBasicScoreData():
+    return {
+        'behavior':'positive',
+        'spam':False,
+        'problems':[],
+        'min_problems':0
     }
