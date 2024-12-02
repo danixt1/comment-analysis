@@ -45,7 +45,7 @@ class Comment:
             "process":self.process
         }
 
-class CommentTest(Comment):
+class CommentScorer(Comment):
     def __init__(self,expected:dict, **kwargs):
         super().__init__(**kwargs)
         self.expected = expected
@@ -55,7 +55,7 @@ class CommentTest(Comment):
         if self.result is None:
             return None
         score = 0
-        maxScore = 1
+        maxScore = 0
         problemsNotDetected = []
         expected = self.expected
         result = self.result
@@ -73,8 +73,10 @@ class CommentTest(Comment):
         if expectedBehavior == resultBehavior:
             score += 1
 
-        if resultSpam == expectedSpam:
-            score += 1
+        if expectedSpam:
+            maxScore += 1
+            if resultSpam:
+                score += 1
 
         if expected['min_problems']:
             maxScore += expected['min_problems']
@@ -88,8 +90,8 @@ class CommentTest(Comment):
                 problemsNotDetected.append(problem)
 
         return dict(
-            score=(1 /maxScore) * score,
-            notDetected=problemsNotDetected,
+            score=1 if maxScore == 0 else (1 /maxScore) * score,
+            not_detected=problemsNotDetected,
         )
     
     def attachInfo(self, info, processName: str, process_id: int):
