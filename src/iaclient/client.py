@@ -28,7 +28,8 @@ class IAClient(ABC):
         logger.info(f'initializing IA client {clientName}')
     def useAutoTest(self,percentage = 0.20):
         self.autoTestPercentage = percentage
-
+    def isUsingAutoTest(self):
+        return self.autoTestPercentage > 0
     @abstractmethod
     def _separateCommentsBatch(self,comments: list[Comment]) -> list[list[Comment]]:
         """Receive the data to divide in batchs to send to the AI.
