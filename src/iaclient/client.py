@@ -3,7 +3,7 @@ from abc import ABC,abstractmethod
 from .promptInfo import PromptInfo
 from .process import Process
 from .requestProcess import RequestProcess
-from ..comment import Comment
+from ..comment import Comment,CommentScorer
 
 import logging
 import time
@@ -24,8 +24,10 @@ class IAClient(ABC):
     def __init__(self,clientName):
         self.observers:list[ClientObserver] = []
         self.clientName = clientName
+        self.autoTestPercentage = 0
         logger.info(f'initializing IA client {clientName}')
-
+    def useAutoTest(self,percentage = 0.20):
+        self.autoTestPercentage = percentage
 
     @abstractmethod
     def _separateCommentsBatch(self,comments: list[Comment]) -> list[list[Comment]]:
@@ -72,6 +74,7 @@ class IAClient(ABC):
         process = Process(self.clientName)
         observers = self.observers
 
+        # Get From cache
         if hasattr(self, "_cache"):
             comments = self.__fromCache(comments)
             if len(comments) == 0:
@@ -79,6 +82,19 @@ class IAClient(ABC):
                 process.finish()
                 return process
         
+        # Create auto test comments
+        if self.autoTestPercentage:
+            from src.datasets.makeDataset import makeData
+            quantity = int(len(comments) * self.autoTestPercentage) or 1
+            distribuition = int(len(comments) / quantity)
+            tests = makeData(quantity)
+            tests = [CommentScorer(**x) for x in tests]
+            comments = [x for x in comments]
+            testIndex =0
+            for i in range(len(comments) -1,0,-distribuition):
+                comments.insert(i, tests[testIndex])
+                testIndex+=1 
+
         batchs = self._separateCommentsBatch(comments)
         batchs = [x for x in batchs if len(x)]
         for obs in observers:
@@ -88,9 +104,9 @@ class IAClient(ABC):
             logger.info(f"client {self.clientName}:requesting analyze for batch with {len(batch)} comments...")
             requestData = RequestProcess( prompt, batch)
             self._makeRequestToAi(str(prompt),requestData)
-            requestData.finish()
-            process.getRequest(requestData, index)
             if requestData.error:
+                requestData.finish()
+                process.getRequest(requestData, index)
                 error,msg = requestData.error
                 if error in ["timeout","connection"]:
                     logger.warning(f"client {self.clientName}:Failed requesting api data, error:{error}, msg:{msg}, retrying...")
@@ -99,14 +115,32 @@ class IAClient(ABC):
                 return False
             
             data = requestData.data
-
-            for index in range(len(data)):
-                message,msgData = batch[index],data[index]
+            if len(data) > len(batch):
+                requestData.setHallucinationError("Returned more data than the expected")
+                requestData.finish()
+                return False
+            for i in range(len(data)):
+                message,msgData = batch[i],data[i]
                 for obs in observers:
                     obs.notify_data_added_to_comment(data,message)
                 message.attachInfo(msgData,self.clientName,process.id)
+
+            # Get Score and remove CommentScorer from comments
+            if self.autoTestPercentage:
+                scores = []
+                for x in batch:
+                    if isinstance(x, CommentScorer):
+                        scores.append(x.getScore())
+                if len(scores) > 0:
+                    requestData.setScore(scores)
+                    logger.info(f"client {self.clientName}:score for batch {index} is {requestData.score.totalScore}")
+                batch = [x for x in batch if not isinstance(x, CommentScorer)]
+
             if hasattr(self, "_cache"):
-                self.__addToCache(batch)
+                self.__addToCache(batch if self.autoTest else batch)
+
+            requestData.finish()
+            process.getRequest(requestData, index)
             return True
 
         for batch in batchs:

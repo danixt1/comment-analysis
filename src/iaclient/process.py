@@ -22,6 +22,7 @@ class Process:
         self.tokensOutput = 0
         self.batchs = []
         self.requests = []
+        self.scores = []
         Process.idCount += 1
         
     def addBatch(self, prompt,comments):
@@ -41,6 +42,10 @@ class Process:
             "success":not request.data == None,
             "batch_pos":pos
         }
+        if request.score:
+            reqInfo["score"] = request.score.asdict()
+            self.scores.append(request.score.asdict())
+
         self.requests.append(reqInfo)
         if request.data == None:
             reqInfo["error"] = request.error
@@ -60,7 +65,7 @@ class Process:
     def finish(self):
         self.endTimestamp = int(round(time.time() * 1000))
     def toDict(self):
-        return {
+        final = {
             "id": self.id,
             "name": self.name,
             "commit": self.commit,
@@ -75,3 +80,6 @@ class Process:
             "requests": self.requests,
             "batchs": self.batchs
         }
+        if len(self.scores) > 0:
+            final["score"] = sum([score["totalScore"] for score in self.scores]) / len(self.scores)
+        return final

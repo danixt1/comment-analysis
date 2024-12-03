@@ -15,11 +15,14 @@ class RequestProcess:
         self.tokensOutput = None
         self.data = None
         self.error = None
+        self.score = None
 
     def setData(self, data):
         self.data = data
         return self
-    
+    def setScore(self, scores):
+        self.score = ScoreFromRequest(scores)
+        return self
     def setTokensInput(self,tokens:int):
         self.tokensInput = tokens
         return self
@@ -34,7 +37,8 @@ class RequestProcess:
         if not self.data and not self.error:
             raise Exception("No data or error set")
         self.end = int(round(time.time() * 1000))
-
+    def setHallucinationError(self, details = ''):
+        return self._setError("hallucination", details)
     def setTimeoutError(self,details=""):
         return self._setError("timeout",details)
     
@@ -59,3 +63,18 @@ class RequestProcess:
     def _setError(self,erroType,msg):
         self.error = (erroType,msg)
         return self
+class ScoreFromRequest():
+    def __init__(self,scores):
+        totalScore = 0
+        notDetected = []
+        for score in scores:
+            if len(score['not_detected']) > 0:
+                notDetected.extend(score['not_detected'])
+            totalScore +=score['score']
+        self.totalScore = totalScore / len(scores)
+        self.notDetectedProblems = notDetected
+    def asdict(self):
+        return dict(
+            totalScore = self.totalScore,
+            notDetectedProblems = self.notDetectedProblems
+        )
