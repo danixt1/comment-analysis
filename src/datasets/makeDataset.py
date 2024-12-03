@@ -59,7 +59,8 @@ def makeData(limit:int,exclude_tags = [],searchIn = commentsData):
         elif 'messages' in c:
             fromMessages(c)
             continue
-        raise Exception(f"Unknown comment type: {c}")
+        else:
+            raise Exception(f"Unknown comment type: {c}")
     random.shuffle(comments)
     return comments
         
