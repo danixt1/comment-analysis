@@ -62,7 +62,7 @@ class CommentScorer(Comment):
 
         expectedBehavior = expected['behavior']
         expectedSpam = expected['spam']
-
+        expectedProblems = expected['problems'] if 'problems' in expected else []
         resultBehavior = result['behavior']
         resultSpam = result['spam'] if 'spam' in result else False
         resultProblems = result['problems'] if 'problems' in result else []
@@ -82,7 +82,7 @@ class CommentScorer(Comment):
             maxScore += expected['min_problems']
             score += len(resultProblems)
 
-        for problem in expected['problems']:
+        for problem in expectedProblems:
             maxScore += 1
             if problem in resultProblems:
                 score += 1
