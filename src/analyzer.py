@@ -8,21 +8,27 @@ config = None
 filepath = None
 limit = 30
 def getCmdIndex(abrev,ext):
-    if '-'+abrev in args:
+    if '-'+abrev in args and abrev:
         return args.index('-'+abrev)
     if '--'+ext in args:
         return args.index('--'+ext)
     return None
+
 def haveCmd(abrev, ext):
     return not getCmdIndex(abrev, ext) == None
-HELP = """Usage: analyzer [start|deps] [cmds]
+HELP = f"""Usage: analyzer [start|deps] [cmds]
 Options:
   -h, --help     display this help and exit
 
-  start          start execution with the instructions in config.json
+  start        start execution with the instructions in config.json
 
-  deps        output the pip install command with the dependencies of the project
-  -c --config    set the config file to by used."""
+  deps         output the pip install command with the dependencies of the project
+  -c --config   set the config file to by used in command generation.
+     --sudo     add "sudo" to the start of the commant
+     
+  dataset
+  -p --path     path with the dataset file to output the CSV data
+  -l --limit    limit of data to generate (default {limit})"""
 # Check if no arguments are provided
 if len(args) == 0:
     print(HELP)
@@ -53,7 +59,7 @@ if 'start' in args:
     exit()
 if 'deps' in args:
     import src.dependency as deps
-    deps.run(config)
+    deps.run(config,haveCmd('','sudo'))
     exit()
 if 'dataset' in args:
     import src.datasets.makeDataset as dataset
