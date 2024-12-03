@@ -17,7 +17,7 @@ def getDeps(depDict,configs):
             deps += retVal
         
     return deps
-def run(path = None):
+def run(path = None,putSudo = False):
     deps = ['python-dotenv']
     if path == None:
         path = 'config.json'
@@ -30,4 +30,6 @@ def run(path = None):
     deps += getDeps(IACLIENTS_DEPS, config['processing'])
     deps += getDeps(OUTPUTS_DEPS, config['output'])
     cmdStr = 'pip install '+' '.join(deps)
+    if putSudo:
+        cmdStr = 'sudo '+cmdStr
     print(cmdStr)
