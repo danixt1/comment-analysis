@@ -1,4 +1,3 @@
-from src.comment import Comment
 from datetime import datetime
 import calendar
 
@@ -16,20 +15,56 @@ class DateInterval():
         self.startDate = start
         self.endDate = end
 
-        diffDays = (end - start).days
         if granularity is None:
+            diffDays = (end - start).days
             if diffDays < 30:
-                granularity = "daily"
+                granularity = "day"
             elif diffDays < 90:
                 granularity = "week"
             else:
                 granularity = "month"
 
-        if granularity == "daily":
+        if granularity == "day":
             self._dailyInterval()#TODO testing
         elif granularity == "week":
-            raise NotImplementedError()
-            self.intervals = [[]] * int(diffDays / 7)
+
+            weeks = calendar.monthcalendar(start.year,start.month)
+            print(weeks)
+            #weekIndex = weeks.index([x for x in weeks if start.day in x][0]) + 1#this is the location of the first week
+            actMonth = start.month
+            actYear = start.year
+            totalMonths = (end.year - start.year) * 12 + (end.month - start.month) + 1
+            #self.intervals = [[] for _ in range(len(weeks) - weekIndex)]
+            lastData = 0
+            for i in range(totalMonths):
+                currentWeeks =calendar.monthcalendar(actYear, actMonth)
+                lenWeeks = len(currentWeeks)
+                startFrom = len(self.intervals)
+
+                if currentWeeks[0][0] == 0:#if the day is 0 its because continuation the last week
+                    startFrom -= 1
+                    lenWeeks -= 1
+                self.intervals.extend([[] for _ in range(lenWeeks)])
+
+                for dataIndex in range(lastData, len(self._dates)):
+                    date,data = self._dates[dataIndex]
+                    if date.month == actMonth and date.year == actYear:
+
+                        for weekIndex in range(lenWeeks):
+                            if date.day in currentWeeks[weekIndex]:
+                                finalPos = weekIndex + startFrom
+                                self.intervals[finalPos].append(data)
+                                lastData = dataIndex + 1
+                    else:
+                        break
+                actMonth += 1
+                if actMonth > 12:
+                    actMonth = 1
+                    actYear += 1
+            #print(len(weeks) - weekIndex)
+            #mode 1 if the first value is 0 then skip this week because its continuation from the before else if it is the start week
+            #raise NotImplementedError()
+            #self.intervals = [[]] * int(diffDays / 7)
             steps = 604800
         elif granularity == "month":
             self._montlyInterval()
