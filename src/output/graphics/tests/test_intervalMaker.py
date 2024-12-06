@@ -1,4 +1,4 @@
-from src.output.graphics.intervalMaker import DateInterval
+from src.output.graphics.intervalMaker import DateInterval,LegendInterval
 from datetime import datetime
 import random
 
@@ -59,3 +59,23 @@ def test_DateInterval_week():
     assert intervals[3][1] == {"ref":1,"day":1}
     assert intervals[0][0] == {"ref":12,"day":9}
     assert intervals[0][1] == {"ref":12,"day":10}
+
+def test_LegendInterval_month():
+    intervalMaker = makeBasicLegendInterval([datetime(2020, 1, 1),datetime(2020,12,1)],"month")
+    assert intervalMaker.getLegends() == [add0(x) + "/2020" for x in range(1,13)]
+
+def test_LegendInterval_2_month():
+    intervalMaker = makeBasicLegendInterval([datetime(2020, 1, 1), datetime(2020,12,1)], "month")
+    legendInterval = LegendInterval(intervalMaker, 6)
+    assert legendInterval.getLegends() == [add0(x) + "/2020" for x in range(1, 13, 2)]
+    
+def add0(x):
+    return "0"+str(x) if x < 10 else str(x)
+
+def makeBasicLegendInterval(dates,granularity):
+    dates = [datetime(2020, 1, 1),datetime(2020,12,1)]
+    data = [{"ref":x.month,"day":x.day} for x in dates]
+    dates = [x.timestamp() for x in dates]
+    datesWithInterval = list(zip(dates, data))
+    random.shuffle(datesWithInterval)
+    return DateInterval(datesWithInterval,granularity, timestampInSeconds=True)
