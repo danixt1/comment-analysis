@@ -1,6 +1,7 @@
 from datetime import datetime
 import calendar
 
+
 class DateInterval():
 
     def __init__(self,dataWithTimestamp:list,granularity:str = None,timestampInSeconds = False):
@@ -12,8 +13,8 @@ class DateInterval():
         start = self._dates[0][0]
         end = self._dates[-1][0]
 
-        self.startDate = start
-        self.endDate = end
+        self.startDate:datetime = start
+        self.endDate:datetime = end
 
         if granularity is None:
             diffDays = (end - start).days
@@ -38,7 +39,7 @@ class DateInterval():
 
         actMonth = start.month
         actYear = start.year
-        
+
         currentWeeks =calendar.monthcalendar(actYear, actMonth)
 
         startPosition = 0
@@ -127,5 +128,81 @@ class DateInterval():
     
     def _makeIntervals(self,quant):
         self.intervals = [[] for _ in range(quant)]
+
     def getIntervals(self):
         return self.intervals
+    
+    def getLegends(self,limit = 12):
+        return LegendInterval(self,limit).getLegends()
+
+def add0(num):
+    return "0" + str(num) if num < 10 else str(num)
+
+class LegendInterval():
+
+    def __init__(self, dateInterval:DateInterval,limit = 12,minLegends = 6):
+        self.legends = []
+        self.intervals = dateInterval.intervals
+        self.startDate = dateInterval.startDate
+        self.endDate = dateInterval.endDate
+
+        startDate= self.startDate
+        endDate = self.endDate
+
+        diffYears = endDate.year - startDate.year
+
+        def checkOthers():
+            totalMonths = endDate.month - startDate.month + 1
+            if totalMonths > minLegends:
+                self._legendMonth(jumpMonths = totalMonths // limit)
+            else:
+                totalDays = (endDate - startDate).days
+                if totalDays > minLegends:
+                    self._legendDay()
+                else:
+                    self._legendHour()
+
+        if diffYears > 0:
+            if diffYears > minLegends:
+                self._legendYear()
+            else:
+                checkOthers()
+        else:
+            checkOthers()
+
+    def _legendYear(self):
+        startYear = self.startDate.year
+        endYear = self.endDate.year
+
+        self.legends = [str(startYear + i) for i in range(endYear - startYear)]
+
+    def _legendMonth(self,jumpMonths = 1):
+        legends = []
+        firstDate = self.startDate
+        endDate = self.endDate
+
+        monthsToEnd = (endDate.year - firstDate.year) * 12 + (endDate.month - firstDate.month) + 1
+        
+        actMonth = firstDate.month
+        actYear = endDate.year
+        
+        for _ in range(monthsToEnd // jumpMonths):
+            legends.append(f"{add0(actMonth)}/{actYear}")
+            actMonth += jumpMonths
+            if actMonth > 12:
+                actMonth = 1
+                actYear += 1
+        self.legends = legends
+
+    def _legendDay(self):
+        startDay = self.startDate.day
+        endDay = self.endDate.day
+        self.legends = [add0(startDay + i) for i in range(endDay - startDay)]
+    
+    def _legendHour(self):
+        startHour = self.startDate.hour
+        endHour = self.endDate.hour
+        self.legends = [add0(startHour + i) for i in range(endHour - startHour)]
+
+    def getLegends(self):
+        return self.legends
