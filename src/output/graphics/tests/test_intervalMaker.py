@@ -38,3 +38,24 @@ def test_DateInterval_month():
             actMonth = 1
     #Check the order and if the values is passed correct.
     assert [x['day'] for x in intervals[1]] == [1,3,8],"Incorrect expected values"
+
+def test_DateInterval_week():
+    # Day is 9(Monday) what is the start of the 2 second week(in python default behavior) the first week MUST NOT exist in output.
+    # Days 10,15 is in the same week of 12 making the first value equal 3
+    # From day 17 to 30 have one week gap(0).
+    # Day 1 of 2025(Wednesday) need to continue the week of day 30 in 2024 making the final value 2
+    # The others weeks need to be desconsidered
+    dates = [datetime(2024, 12, 9),datetime(2024, 12, 10),datetime(2024,12,15),datetime(2024,12,17),datetime(2024,12,30),datetime(2025,1,1)]
+
+    data = [{"ref":x.month,"day":x.day} for x in dates]
+    dates = [x.timestamp() for x in dates]
+    datesWithInterval = list(zip(dates,data))
+
+    random.shuffle(datesWithInterval)
+    intervalMaker = DateInterval(datesWithInterval,"week",timestampInSeconds=True)
+    intervals = intervalMaker.getIntervals()
+    counts = [len(x) for x in intervals]
+    assert counts == [3, 1, 0, 2]
+    assert intervals[3][1] == {"ref":1,"day":1}
+    assert intervals[0][0] == {"ref":12,"day":9}
+    assert intervals[0][1] == {"ref":12,"day":10}
