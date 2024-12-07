@@ -1,11 +1,12 @@
 from datetime import datetime
 import calendar
-
+from dateutil.rrule import rrule, MONTHLY
 
 class DateInterval():
 
     def __init__(self,dataWithTimestamp:list,granularity:str = None,timestampInSeconds = False):
         n = 1 if timestampInSeconds else 1000
+        self._argsLegend = {}
         self._dates = dataWithTimestamp
         self._dates.sort(key=lambda x: x[0])
         self._dates = [[datetime.fromtimestamp(x[0] / n),x[1]] for x in self._dates]
@@ -25,6 +26,8 @@ class DateInterval():
             else:
                 granularity = "month"
 
+        self.granularity = granularity
+
         if granularity == "day":
             self._dailyInterval()
         elif granularity == "week":
@@ -33,6 +36,7 @@ class DateInterval():
             self._montlyInterval()
         else:
             raise Exception('invalid granularity')
+        
     def _weekInterval(self):
         start = self.startDate
         end = self.endDate
@@ -68,6 +72,7 @@ class DateInterval():
             else:
                 break
         self.intervals = self.intervals[:removeLastClearIndex]
+    
     def _stepWeek(self,actYear,actMonth,currentWeeks,lastData, continueFromLastWeek = False):
             lenWeeks = len(currentWeeks)
             startFrom = len(self.intervals)
@@ -101,39 +106,34 @@ class DateInterval():
             diffFromStart = (date - start).days
             self.intervals[diffFromStart].append(comment)
         
-    def _montlyInterval(self):
-        start = self.startDate
-        end = self.endDate
-        
-        monthsPassed = (end.year - start.year) * 12 + (end.month - start.month) + 1
-        self._makeIntervals(monthsPassed)
-        lastPos = 0
-        monthInYear = start.month
-        for i in range(monthsPassed):
-            lastPos = self._stepEveryMonth(lastPos,monthInYear,i)
-            if monthInYear == 12:
-                monthInYear = 1
-                continue
-            monthInYear += 1
+    def _montlyInterval(self,jumps = 1):
+        lastPassedDateIndex = 0
 
-    def _stepEveryMonth(self,actPos:int,actMonth,indexIntervals):
-        actInterval = self.intervals[indexIntervals]
-        for date,comment in self._dates[actPos::]:
+        for date in rruleMonthIter(self.startDate,self.endDate,jumps):
+            lastPassedDateIndex = self._stepEveryMonth(lastPassedDateIndex, date.month)
+
+    def _stepEveryMonth(self,actPos:int,actMonth):
+        actInterval = []
+        for date,data in self._dates[actPos::]:
             if date.month == actMonth:
                 actPos += 1
-                actInterval.append(comment)
+                actInterval.append(data)
             else:
                 break
+        self.intervals.append(actInterval)
         return actPos
     
     def _makeIntervals(self,quant):
         self.intervals = [[] for _ in range(quant)]
 
+    def setLegendKwargs(self, **kwargs):
+        self._argsLegend = kwargs
+    
     def getIntervals(self):
         return self.intervals
     
-    def getLegends(self,limit = 12):
-        return LegendInterval(self,limit).getLegends()
+    def getLegends(self):
+        return LegendInterval(self,**self._argsLegend).getLegends()
 
 def add0(num):
     return "0" + str(num) if num < 10 else str(num)
@@ -178,26 +178,33 @@ class LegendInterval():
 
     def _legendMonth(self,jumpMonths = 1):
         legends = []
-        firstDate = self.startDate
-        endDate = self.endDate
 
-        monthsToEnd = (endDate.year - firstDate.year) * 12 + (endDate.month - firstDate.month) + 1
-        
-        actMonth = firstDate.month
-        actYear = endDate.year
-        
-        for _ in range(monthsToEnd // jumpMonths):
-            legends.append(f"{add0(actMonth)}/{actYear}")
-            actMonth += jumpMonths
-            if actMonth > 12:
-                actMonth = 1
-                actYear += 1
+        for date in rruleMonthIter(self.startDate,self.endDate,jumpMonths):
+            legends.append(f"{add0(date.month)}/{date.year}")
+
         self.legends = legends
 
     def _legendDay(self):
-        startDay = self.startDate.day
-        endDay = self.endDate.day
-        self.legends = [add0(startDay + i) for i in range(endDay - startDay)]
+        startDate = self.startDate
+        endDate = self.endDate
+
+        startDay = startDate.day
+        endDay = endDate.day
+
+        if startDate.month == endDate.month:
+            self.legends = [add0(startDay + i) for i in range(endDay - startDay)]
+            return
+        actDay = startDate.day
+        actMonth = startDate.month
+        totalDays = (endDate - startDate).days
+        for _ in range(totalDays):
+            self.legends.append(f"{add0(actDay)}/{add0(actMonth)}")
+            actDay += 1
+            if actDay > calendar.monthrange(startDate.year, actMonth)[1]:
+                actDay = 1
+                actMonth += 1
+                if actMonth > 12:
+                    actMonth = 1
     
     def _legendHour(self):
         startHour = self.startDate.hour
@@ -206,3 +213,12 @@ class LegendInterval():
 
     def getLegends(self):
         return self.legends
+
+def rruleMonthIter(start,end,intervals):
+    # Solution to RFC 3.3.10 more in: https://dateutil.readthedocs.io/en/stable/rrule.html
+
+    startDate = datetime(start.year, start.month, 1, 2)
+    endDate = datetime(end.year, end.month, 1, 2)
+
+    for date in rrule(freq=MONTHLY, dtstart=startDate, until=endDate, interval=intervals):
+        yield date
