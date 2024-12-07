@@ -1,27 +1,15 @@
-import matplotlib.pyplot as plt
 import numpy as np
 
-from .intervalMaker import DateInterval
+from .graphic import BaseGraphic
 
-class PercentageGraphic:
-    def __init__(self,dateInterval:DateInterval,title = None,max_data=6,size = (10,3)):
-        x,y = self._generate_data(dateInterval)
-        fig = plt.figure(figsize=size)
-        ax = fig.add_subplot()
-        ax.set( yticks=np.arange(0, 101,10),ylim=(0,101))
-        def plot():
-            if title:
-                ax.set_title(title)
-            ax.plot(x, y, linewidth=2.0)
-        self.plot = plot
-    def save(self,path):
-        self.plot()
-        plt.savefig(path)
-
-    def _generate_data(self,dateInterval:DateInterval):
+class PercentageGraphic(BaseGraphic):
+    def _plot(self,legends, data, ax):
+        ax.set_yticks(np.arange(0, 101,10))
+        ax.plot(legends, data, linewidth=2.0)
+        
+    def _makeData(self, intervals):
         partValues = []
-
-        for comments in dateInterval.getIntervals():
+        for comments in intervals.getIntervals():
             accNegatives = 0
             accPositives = 0
             for comment in comments:
@@ -38,4 +26,4 @@ class PercentageGraphic:
                 continue
             partValues.append((1 - (accNegatives / total)) * 100)
         
-        return dateInterval.getLegends(),partValues
+        return partValues
