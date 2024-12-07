@@ -20,6 +20,10 @@ class BaseGraphic(ABC):
         self.fig:Figure = fig
         self.axes:Axes = axes
 
+    def subplot(self,**kwargs):
+        self.fig, self.axes = plt.subplots(**kwargs)
+        return self.fig,self.axes
+    
     def makeGraphic(self):
         if self.fig and self.axes:
             fig = self.fig
@@ -52,7 +56,7 @@ class BaseGraphic(ABC):
         pass
 
     @abstractmethod
-    def _plot(legends,data,ax:Axes):
+    def _plot(self,legends,data,ax:Axes):
         pass
     
     def _setTitle(self, ax:Axes, title:str):
