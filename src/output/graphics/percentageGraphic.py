@@ -1,11 +1,11 @@
-from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
-from src.comment import Comment
+
+from .intervalMaker import DateInterval
 
 class PercentageGraphic:
-    def __init__(self,comments:list[Comment],title = None,max_data=6,size = (10,3)):
-        x,y = self._generate_data(comments,max_data)
+    def __init__(self,dateInterval:DateInterval,title = None,max_data=6,size = (10,3)):
+        x,y = self._generate_data(dateInterval)
         fig = plt.figure(figsize=size)
         ax = fig.add_subplot()
         ax.set( yticks=np.arange(0, 101,10),ylim=(0,101))
@@ -18,33 +18,24 @@ class PercentageGraphic:
         self.plot()
         plt.savefig(path)
 
-    def _generate_data(self,comments:list[Comment],limit):
-        timestamps = [[x.timestamp,x.getData()['behavior']] for x in comments]
-        timestamps = list(filter(lambda x:x[1] != 'question',timestamps))
-        timestamps.sort()
-
-        initTime = timestamps[0][0]
-        endTime = timestamps[-1][0]
-        intervals = (endTime - initTime) / limit
-        limitInInterval = initTime + intervals
-
-        partTimestamp = []
+    def _generate_data(self,dateInterval:DateInterval):
         partValues = []
 
-
-        accNegatives = 0
-        accPositives = 0
-        for timestamp,behavior in timestamps:
-            if timestamp >= limitInInterval:
-                partValues.append((1 - (accNegatives / (accPositives + accNegatives))) * 100)#(1 - (1 / 4)) * 100
-                accPositives = 0
-                accNegatives = 0
-                limitInInterval += intervals
-                partTimestamp.append(limitInInterval)
-            if behavior == 'positive':
-                accPositives+= 1
-            elif behavior == 'negative':
-                accNegatives+= 1
-        dates = [datetime.fromtimestamp(x / 1000) for x in partTimestamp]
-        dates = [str(x.year) + '/'+str(x.month) for x in dates]
-        return dates,partValues
+        for comments in dateInterval.getIntervals():
+            accNegatives = 0
+            accPositives = 0
+            for comment in comments:
+                lastData = comment.getData()
+                if lastData == None:
+                    continue
+                if lastData['behavior'] == 'positive':
+                    accPositives+= 1
+                elif lastData['behavior'] == 'negative':
+                    accNegatives+= 1
+            total = accPositives + accNegatives
+            if total == 0:
+                partValues.append(0)
+                continue
+            partValues.append((1 - (accNegatives / total)) * 100)
+        
+        return dateInterval.getLegends(),partValues
