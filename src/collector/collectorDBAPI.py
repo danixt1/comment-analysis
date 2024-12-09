@@ -2,6 +2,13 @@ from src.comment import Comment
 from .collectorBase import CollectorBase
 from sqlalchemy import create_engine, text
 
+def convert_date_gmt(date_str):
+    from datetime import datetime
+    return int(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
+
+mappingsFns = {
+    "gmt":convert_date_gmt
+}
 class CollectorDBAPI(CollectorBase):
 
     def __init__(self,dbUrl:str,table:str, mapping:list) -> None:
@@ -23,9 +30,16 @@ class CollectorDBAPI(CollectorBase):
                     prop = commentRef[index]
                     valueToSet = row[index]
                     if len(self.mapping[index]) == 3:
-                        valueToSet = self.mapping[index][2](valueToSet)
-                        
+                        fnInfo = self.mapping[index][2]
+                        if isinstance(fnInfo,str):
+                            try:
+                                fnInfo =  mappingsFns[fnInfo]
+                            except KeyError as err:
+                                err.add_note("collector.dbapi:supported mapping fns is: "+str(mappingsFns.keys()))
+                                raise err
+                        valueToSet = fnInfo(valueToSet)
                     dictComments[prop] = valueToSet
+
                 if not 'origin' in dictComments:
                     dictComments['origin'] = "SQL:"+self.table
                 comments.append(Comment(**dictComments))
