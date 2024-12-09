@@ -1,7 +1,11 @@
 [
     {
         "lang":"pt",
-        "message":"Assine já ligue XXXX-XXX e tenha a melhor internet por assinatura do brasil!.",
+        "messages":
+        [
+            "Assine já ligue XXXX-XXX e tenha a melhor internet por assinatura do brasil!.",
+            "wqflw,qw  wmdwl"
+        ],
         "spam":true,
         "type":"comment",
         "behavior":"-"
@@ -11,10 +15,22 @@
         "tags":["product","physical"],
         "messages":
         [   
-            "[colchão|celular|computador] [muito bom|maravilhoso]!",
-            "a bateria dura o dia todo ótimo para o dia a dia",
-            "A [geladeira|batedeira] é [linda|maravilhosa]! e não faz barulho",
-            "o guarda roupa é bastante espaçoso"
+            "[colchão|celular|computador|painel] [muito bom|maravilhoso|excelente]!",
+            "a [bateria|carga] dura o dia todo, [ótimo|excelente|perfeito] para o dia a dia",
+            "A [geladeira|batedeira|air fryer] é [linda|maravilhosa]! e não faz barulho",
+            "o [guarda roupa|armario|báu] é [bastante|muito] espaçoso",
+            "[gostei bastante|muito bom|ótimo] e o material é de [excelente|alta] qualidade",
+            "não [instalei ainda|abri], mais veio [certinho|bem embalado|lacrado]",
+            "excelente como o esperado da marca",
+            "a [torneira|mesa|geladeira] é linda e o material é muito bom",
+            "entrego rapidinho e veio tudo certo",
+            "a qualidade da camera é otima parece de filme",
+            "[gostei|muito boa]!, limpa até os cantinhos mais [chatos|dificies]",
+            "[tv|televisão] boa demais recomendo!",
+            "Perfeito susperou minhas expectativas, a imagem e mt excelente tanto pra jogos como pra filmes séries etc, quem estiver na dúvida se compra ou não pode comprar eu garanto q vcs vão gostar também.",
+            "melhor preço de pneu",
+            "a jarra é linda e tem um bom tamanho",
+            "excelente como o esperado"
         ],
         "behavior":"positive",
         "type":"comment",
@@ -24,7 +40,7 @@
         "lang":"pt",
         "tags":["product","generic"],
         "messages":["Produto [muito bom|maravilhoso|excelente]!",
-        "gostei muito!","bom"],
+        "gostei muito!","bom","maravilhoso","não tenho nada a reclamar","excelente","era exatamente o que eu queria!"],
         "behavior":"positive",
         "type":"comment",
         "spam":false
@@ -32,7 +48,9 @@
     {
         "lang":"pt",
         "tags":["product","physical","delivery"],
-        "messages":["gostei bastante da [geladeira|air fryer] mas demorou muito..."],
+        "messages":["gostei bastante da [geladeira|air fryer] mas demorou muito...",
+        "celular excelente mas entrega foi demorada...",
+        "a tv é maravilhoso mas agora pra entregar foi um saco"],
         "behavior":"positive",
         "type":"comment",
         "spam":false,
@@ -40,8 +58,18 @@
     },
     {
         "lang":"pt",
+        "tags":["product","physical","delivery","package_opened"],
+        "messages":["quando a compra chegou o pacote já tinha sido aberto... a placa ta certinha, mas vamos ver se vai prestar",
+        "a caixinha do celular tava um rasgo como se alguem tivesse aberto"],
+        "behavior":"negative",
+        "type":"comment",
+        "spam":false,
+        "min_problems":1
+    },
+    {
+        "lang":"pt",
         "tags":["product","generic"],
-        "messages":["[n|não] gostei","esperava mais..","ruim","esperava mais..."],
+        "messages":["[n|não] gostei","esperava mais..","ruim","não era o que eu esperava..."],
         "behavior":"negative",
         "type":"comment",
         "spam":false
@@ -61,7 +89,11 @@
         "tags":["product","quality","physical"],
         "messages":[
             "Não [gostei|recomendo], a qualidade é muito [baixa|ruim]!",
-            "etragou em 5 meses...","péssima qualidade..."],
+            "etragou em 5 meses...",
+            "péssima qualidade...",
+            "o acabamento é horroso",
+            "n usei nem por uma semana e ja foi"
+        ],
         "behavior":"negative",
         "type":"comment",
         "spam":false,
@@ -70,7 +102,7 @@
     {
         "lang":"pt",
         "tags":["product","physical","missing_part"],
-        "messages":["[veio|chegou] sem uma peca","fico faltando a fonte"],
+        "messages":["[veio|chegou] sem uma peca","fico faltando a fonte","não veio o carregador..."],
         "behavior":"negative",
         "type":"comment",
         "spam":false,
@@ -79,7 +111,7 @@
     {
         "lang":"pt",
         "tags":["product","physical","delivery"],
-        "messages":["demorou muito pra chegar","mais de 2 meses pra chegar, [não|n] compro mais nessa loja!"],
+        "messages":["demorou muito pra chegar","mais de 2 meses pra chegar, [não|n] compro mais nessa loja!","entrega muito demorada..."],
         "behavior":"negative",
         "type":"comment",
         "spam":false,
