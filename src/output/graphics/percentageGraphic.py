@@ -4,9 +4,8 @@ from .graphic import BaseGraphic
 
 class PercentageGraphic(BaseGraphic):
     def _plot(self,legends, data, ax):
-        ax.set_yticks(np.arange(0, 101,10))
         ax.plot(legends, data, linewidth=2.0)
-        
+        ax.set_yticks(np.arange(0, 101, 10))
     def _makeData(self, intervals):
         partValues = []
         for comments in intervals.getIntervals():
