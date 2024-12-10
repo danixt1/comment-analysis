@@ -28,9 +28,10 @@ schema = {
 }
 class GeminiClient(IAClient):
     KNOW_PROBLEMS = ['delivery','damaged']
-    def __init__(self,model = "gemini-1.5-flash"):
+    def __init__(self,model = "gemini-1.5-flash",prefix:str = None):
         super().__init__('google:'+model)
-        genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+        prefix = prefix + '_' if prefix else ''
+        genai.configure(api_key=os.getenv(prefix+'GEMINI_API_KEY'))
 
         self.model = genai.GenerativeModel(model)
 
