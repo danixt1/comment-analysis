@@ -39,3 +39,10 @@ def test_where_condition(db_url):
     data = collector.collect()
     assert len(data) == 1
     assert data[0].message == "expected message"
+
+def test_env_replacement(monkeypatch):
+    db_url = "postgresql+psycopg2://TEST_USERNAME:TEST_PASSWORD@localhost/test"
+    monkeypatch.setenv("TEST_PASSWORD", "test")
+    monkeypatch.setenv("TEST_USERNAME", "user")
+    collector = CollectorDBAPI(db_url, "comments", [("content", "message")],envs=["TEST_PASSWORD","TEST_USERNAME"])
+    assert collector.dbUrl == "postgresql+psycopg2://user:test@localhost/test"

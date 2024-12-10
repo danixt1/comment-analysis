@@ -1,7 +1,7 @@
 from src.comment import Comment
 from .collectorBase import CollectorBase
 from sqlalchemy import create_engine, text
-
+import os
 def convert_date_gmt(date_str):
     from datetime import datetime
     return int(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
@@ -11,14 +11,20 @@ mappingsFns = {
 }
 class CollectorDBAPI(CollectorBase):
 
-    def __init__(self,dbUrl:str,table:str, mapping:list,where:str = None) -> None:
+    def __init__(self,dbUrl:str,table:str, mapping:list,where:str = None,envs:list[str] = []) -> None:
         super().__init__()
-        self.engine = create_engine(dbUrl)
+        for placeholder in envs:
+            if not os.getenv(placeholder):
+                raise Exception("collector.dbapi:missing env var: "+placeholder)
+            
+            dbUrl = dbUrl.replace(placeholder, os.getenv(placeholder))
         self.table = table
         self.mapping = mapping
         self.where = where or ''
+        self.dbUrl = dbUrl
     
     def collect(self) -> list[Comment]:
+        self.engine = create_engine(self.dbUrl)
         collumsToGet = [x[0] for x in self.mapping]
         commentRef = [x[1] for x in self.mapping]
         comments = []
