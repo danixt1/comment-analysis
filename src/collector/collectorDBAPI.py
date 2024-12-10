@@ -11,18 +11,20 @@ mappingsFns = {
 }
 class CollectorDBAPI(CollectorBase):
 
-    def __init__(self,dbUrl:str,table:str, mapping:list) -> None:
+    def __init__(self,dbUrl:str,table:str, mapping:list,where:str = None) -> None:
         super().__init__()
         self.engine = create_engine(dbUrl)
         self.table = table
         self.mapping = mapping
+        self.where = where or ''
     
     def collect(self) -> list[Comment]:
         collumsToGet = [x[0] for x in self.mapping]
         commentRef = [x[1] for x in self.mapping]
         comments = []
+        where = " WHERE " + self.where + ';' if self.where else ';'
         with self.engine.connect() as conn:
-            result = conn.execute(text(f'select {",".join(collumsToGet)} from {self.table}'))
+            result = conn.execute(text(f'SELECT {",".join(collumsToGet)} FROM {self.table}' + where))
             allResults = result.all()
             for row in allResults:
                 dictComments = {}
