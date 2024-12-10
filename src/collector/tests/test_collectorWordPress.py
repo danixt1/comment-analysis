@@ -35,10 +35,13 @@ def db_url(tmp_path_factory):
         conn.commit()
     return f"sqlite:///{db_path}"
 
-def test_collectorWordPress(db_url):
+def test_collectorWordPress(db_url,monkeypatch):
     convert_date_gmt = lambda date_str: int(datetime.strptime(date_str, '%Y-%m-%d %H:%M:%S').timestamp() * 1000)
-    collector = CollectorWordPress('', '','','')
-    collector.engine = create_engine(db_url)
+    monkeypatch.setenv('TEST_WP_PASSWORD', 'testPassword')
+    monkeypatch.setenv('TEST_WP_USERNAME', 'user')
+    collector = CollectorWordPress('test', 'localhost',prefix="TEST")
+    assert collector.dbUrl == "mysql+mysqlconnector://user:testPassword@localhost:3306/test"
+    collector.dbUrl = db_url
     data = collector.collect()
 
     assert len(data) == 2
