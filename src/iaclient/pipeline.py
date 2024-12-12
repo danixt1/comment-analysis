@@ -1,21 +1,19 @@
 from dataclasses import dataclass
+import enum
 
-MODE_ADD = 0
-MODE_BEFORE = 1
-MODE_AFTER = 2
-
+class RuleMode(enum.Enum):
+    MODE_ADD = 1
+    MODE_BEFORE = 2
+    MODE_AFTER = 3
 @dataclass
 class Rule:
     fn:callable
     pipe:str
-    mode:int
+    mode:RuleMode
     linked:str = None
 
 class Pipe:
     def __init__(self,pipeName:str,activator:callable = None):
-        self._before = {}
-        self._after = {}
-        self._added = []
         self.rules:list[Rule] = []
         self._activate =activator if activator else lambda *args, **kwargs: True
         self._onPipesCreated = lambda *args, **kwargs: None
@@ -26,18 +24,19 @@ class Pipe:
         return self
     
     def before(self,nameFn:str,func:callable):
-        rule = Rule(func, self.pipeName, MODE_BEFORE,nameFn)
+        rule = Rule(func, self.pipeName, RuleMode.MODE_BEFORE,nameFn)
         self.rules.append(rule)
         return self
     
     def after(self,nameFn:str,func:callable):
-        rule = Rule(func, self.pipeName, MODE_AFTER, nameFn)
+        rule = Rule(func, self.pipeName, RuleMode.MODE_AFTER, nameFn)
         self.rules.append(rule)
         return self
         
-    def add(self,func:callable):
-        rule = Rule(func, self.pipeName, MODE_ADD)
-        self.rules.append(rule)
+    def add(self,*funcs:callable):
+        for func in funcs:
+            rule = Rule(func, self.pipeName, RuleMode.MODE_ADD)
+            self.rules.append(rule)
         return self
     
     def onPipesCreated(self, func):
@@ -51,6 +50,7 @@ class PipeRunner:
         self._pipes:dict[str,Pipe] = {}
         self.executionList = []
         self.data = {}
+
     def addPipe(self, pipe:Pipe):
         self._pipes[pipe.pipeName] = pipe
         return self
@@ -64,14 +64,14 @@ class PipeRunner:
             
     def _makePipe(self):
         rulesAdd:list[Rule] = []
-        rulesLinked:list[Rule] = {}
+        rulesLinked:dict[str,Rule] = {}
         execList = []
         for pipe in self._pipes.values():
             if not self._fnWrapper(pipe._activate):
                 continue
             for rule in pipe.rules:
                 rule.fn._origin = rule.pipe
-                if rule.mode == MODE_ADD:
+                if rule.mode == RuleMode.MODE_ADD:
                     rulesAdd.append(rule)
                     continue
                 value = rule.linked
@@ -83,27 +83,28 @@ class PipeRunner:
             self._addLinkeds(rule, execList, rulesLinked)
         self.executionList = execList
 
-    def _addLinkeds(self, rule:Rule, execList:list,rulesLinked):
+    def _addLinkeds(self, rule:Rule, execList:list,rulesLinked:dict[str,list[Rule]]):
         fnName = rule.fn.__name__
         if fnName not in rulesLinked:
             return
         links = rulesLinked[fnName]
         for ruleLinked in links:
-            n = 1 if ruleLinked.mode == MODE_AFTER else 0
+            n = 1 if ruleLinked.mode == RuleMode.MODE_AFTER else 0
             execList.insert(execList.index(rule.fn) + n, ruleLinked.fn)
             self._addLinkeds(ruleLinked, execList, rulesLinked)
 
     def _fnWrapper(self,fn):
-        props = list(inspect.signature(fn).parameters.keys())
+        params = inspect.signature(fn).parameters
+        props = list(params.keys())
         args = []
         for prop in props:
+            if params[prop].kind == inspect.Parameter.VAR_KEYWORD or params[prop].kind == inspect.Parameter.VAR_POSITIONAL:
+                continue
             if prop == 'data':
                 args.append(self.data)
                 continue
             if prop == 'pipes':
                 args.append(self._pipes)
-                continue
-            if prop == 'args' or prop == 'kwargs':
                 continue
             args.append(self.data[prop])
         return fn(*args)
