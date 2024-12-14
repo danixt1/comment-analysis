@@ -1,19 +1,25 @@
-from src.iaclient.pipeline import PipeRunner,Pipe
+from src.iaclient.pipeline import PipeRunner,Pipe,Controller
 
 def test_argsPassing():
     runner = PipeRunner()
     runned = [False,False,False,False]
-    def first(*args):
+    def first(test,*args):
+        assert test == 11
         assert len(args) == 0
         runned[0] = True
-    def second(**kwargs):
+
+    def second(test,**kwargs):
+        assert test == 11
         assert len(kwargs) == 0
         runned[1] = True
+
     def third(test):
         assert test == 11
         runned[2] = True
+
     def fourth():
         runned[3] = True
+
     pipeRules = Pipe('test').add(first,second,third,fourth)
     runner.addPipe(pipeRules)
     runner.data['test'] = 11
@@ -41,6 +47,8 @@ def test_beforeRule():
 
 def test_afterRule():
     runner = PipeRunner()
+    runnedNever = False
+    
     def first():
         pass
     def other():
@@ -49,13 +57,74 @@ def test_afterRule():
         pass
     def trueFirst():
         pass
-    pipe1 = Pipe('test').add(trueFirst).add(first)
+    def neverFunc():
+        nonlocal runnedNever
+        runnedNever = True
+        pass
+
+    pipe1 = Pipe('test').add(trueFirst).add(first).after('doNotExistFunc',neverFunc)
     pipe2 = Pipe('test2').after('first', other)
     pipe3 = Pipe('test3').after('other', afterOther)
 
     runner.addPipe(pipe2).addPipe(pipe3).addPipe(pipe1).execute()
-
     assert ['trueFirst','first','other','afterOther'] == [x.__name__ for x in runner.executionList]
+    assert not runnedNever
+
+def test_afterPipes():
+    runner = PipeRunner()
+    def first():
+        pass
+    def second():
+        pass
+    def other():
+        pass
+    def afterPipes(pipe:Pipe,pipes:dict[str,Pipe]):
+        assert 'test2' in pipes
+        pipe.add(other)
+
+    pipe1 = Pipe('test').onPipesCreated(afterPipes).add(first)
+    pipe2 = Pipe('test2').add(second)
+    runner.addPipe(pipe1).addPipe(pipe2).execute()
+    assert ['first','other','second'] == [x.__name__ for x in runner.executionList]
+
+def test_finish():
+    runner = PipeRunner()
+    executed = False
+    def first():
+        pass
+    def second(controller:Controller):
+        controller.finish()
+        return True
+    def third():
+        nonlocal executed
+        executed = True
+        return False
+
+    pipe1 = Pipe('test').add(first,second,third)
+    res = runner.addPipe(pipe1).execute()
+    assert ['first','second','third'] == [x.__name__ for x in runner.executionList]
+    assert res
+    assert not executed, 'third fn must not be executed, because the operation is stopped in the second fn'
+    
+def test_activator():
+    runner = PipeRunner()
+    def trueActivator1():
+        return True
+    def falseActivator():
+        return False
+    def first():
+        pass
+    def other():
+        pass
+    def cantByAdded():
+        pass
+    
+    pipe1 = Pipe('test').add(first).activator(trueActivator1)
+    pipe2 = Pipe('test2').add(other).activator(falseActivator)
+    pipe3 = Pipe('test3').after('other',cantByAdded)
+
+    runner.addPipe(pipe2).addPipe(pipe1).addPipe(pipe3).execute()
+    assert ['first'] == [x.__name__ for x in runner.executionList]
 
 def test_afterWithBefore():
     runner = PipeRunner()
