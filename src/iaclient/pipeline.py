@@ -5,6 +5,7 @@ class RuleMode(enum.Enum):
     MODE_ADD = 1
     MODE_BEFORE = 2
     MODE_AFTER = 3
+
 @dataclass
 class Rule:
     fn:callable
@@ -12,6 +13,12 @@ class Rule:
     mode:RuleMode
     linked:str = None
 
+class Controller:
+    def __init__(self):
+        self._finish = False
+    def finish(self):
+        self._finish = True
+        
 class Pipe:
     def __init__(self,pipeName:str,activator:callable = None):
         self.rules:list[Rule] = []
@@ -44,12 +51,14 @@ class Pipe:
         return self
     
 import inspect
+
 class PipeRunner:
 
     def __init__(self):
         self._pipes:dict[str,Pipe] = {}
         self.executionList = []
         self.data = {}
+        self.controller =  Controller()
 
     def addPipe(self, pipe:Pipe):
         self._pipes[pipe.pipeName] = pipe
@@ -57,11 +66,18 @@ class PipeRunner:
     
     def execute(self):
         for pipe in self._pipes.values():
-            pipe._onPipesCreated(self,pipe, self._pipes)
+            pipe._onPipesCreated._origin = pipe.pipeName
+            self._fnWrapper(pipe._onPipesCreated)
         self._makePipe()
+        res = None
         for fn in self.executionList:
-            self._fnWrapper(fn)
-            
+            newRes = self._fnWrapper(fn)
+            if not newRes == None:
+                res = newRes
+            if self.controller._finish:
+                break
+        return res
+        
     def _makePipe(self):
         rulesAdd:list[Rule] = []
         rulesLinked:dict[str,Rule] = {}
@@ -97,15 +113,18 @@ class PipeRunner:
         params = inspect.signature(fn).parameters
         props = list(params.keys())
         args = []
+        ops = {
+            'pipe':lambda:args.append(self._pipes[fn._origin]),
+            'data':lambda:args.append(self.data),
+            'pipes':lambda:args.append(self._pipes),
+            'controller':lambda:args.append(self.controller)
+        }
         for prop in props:
-            if params[prop].kind == inspect.Parameter.VAR_KEYWORD or params[prop].kind == inspect.Parameter.VAR_POSITIONAL:
+            if params[prop].kind in [inspect.Parameter.VAR_KEYWORD, inspect.Parameter.VAR_POSITIONAL]:
                 continue
-            if prop == 'data':
-                args.append(self.data)
-                continue
-            if prop == 'pipes':
-                args.append(self._pipes)
-                continue
-            args.append(self.data[prop])
+            if prop in ops:
+                ops[prop]()
+            else:
+                args.append(self.data[prop])
         return fn(*args)
     
