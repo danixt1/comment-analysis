@@ -18,37 +18,60 @@ class Controller:
         self._finish = False
     def finish(self):
         self._finish = True
-        
-class Pipe:
-    def __init__(self,pipeName:str,activator:callable = None):
+
+class RulesAccess:
+    def __init__(self):
         self.rules:list[Rule] = []
+
+    def getRules(self):
+        return self.rules
+    def _addRules(self,rule:Rule):
+        self.rules.append(rule)
+
+class RulesInsertion(RulesAccess):
+
+    def __init__(self,ruleName:str):
+        super().__init__()
+        self._ruleName = ruleName
+
+    def before(self,nameFn:str,func:callable):
+        rule = Rule(func, self._ruleName, RuleMode.MODE_BEFORE,nameFn)
+        self._addRules(rule)
+        return self
+    
+    def after(self,nameFn:str,func:callable):
+        rule = Rule(func, self._ruleName, RuleMode.MODE_AFTER, nameFn)
+        self._addRules(rule)
+        return self
+        
+    def add(self,*funcs:callable):
+        for func in funcs:
+            rule = Rule(func, self._ruleName, RuleMode.MODE_ADD)
+            self._addRules(rule)
+        return self
+    
+class Pipe(RulesInsertion):
+    def __init__(self,pipeName:str,activator:callable = None):
         self._activate =activator if activator else lambda *args, **kwargs: True
         self._onPipesCreated = lambda *args, **kwargs: None
         self.pipeName = pipeName
+        super().__init__(pipeName)
 
     def activator(self,func:callable):
         self._activate = func
         return self
     
-    def before(self,nameFn:str,func:callable):
-        rule = Rule(func, self.pipeName, RuleMode.MODE_BEFORE,nameFn)
-        self.rules.append(rule)
-        return self
-    
-    def after(self,nameFn:str,func:callable):
-        rule = Rule(func, self.pipeName, RuleMode.MODE_AFTER, nameFn)
-        self.rules.append(rule)
-        return self
-        
-    def add(self,*funcs:callable):
-        for func in funcs:
-            rule = Rule(func, self.pipeName, RuleMode.MODE_ADD)
-            self.rules.append(rule)
-        return self
-    
     def onPipesCreated(self, func):
         self._onPipesCreated = func
         return self
+    
+class PipeInstanciable(RulesAccess):
+    """Pipe instantiate only by call from controller.
+    
+    When called create a new sub pipe. rules added with `before` and `after` is added on calling in."""
+    def __init__(self, pipeName):
+
+        super().__init__(pipeName)
     
 import inspect
 
