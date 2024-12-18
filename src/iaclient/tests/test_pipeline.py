@@ -1,4 +1,4 @@
-from src.iaclient.pipeline import PipeRunner,Pipe,Controller
+from src.iaclient.pipeline import PipeRunner,Pipe,Controller, AsyncTaskBucket
 
 def test_argsPassing():
     runner = PipeRunner()
@@ -94,7 +94,7 @@ def test_finish():
         pass
     def second(controller:Controller):
         controller.finish()
-        return True
+        return 'this string'
     def third():
         nonlocal executed
         executed = True
@@ -103,7 +103,7 @@ def test_finish():
     pipe1 = Pipe('test').add(first,second,third)
     res = runner.addPipe(pipe1).execute()
     assert ['first','second','third'] == [x.__name__ for x in runner.executionList]
-    assert res
+    assert res == 'this string'
     assert not executed, 'third fn must not be executed, because the operation is stopped in the second fn'
     
 def test_activator():
@@ -141,3 +141,25 @@ def test_afterWithBefore():
 
     runner.addPipe(pipe2).addPipe(pipe1).execute()
     assert ['trueFirst','first','afterOther','other'] == [x.__name__ for x in runner.executionList]
+
+def test_AsyncTaskBucket():
+    bucket = AsyncTaskBucket()
+    runner = PipeRunner()
+    afterRunner = False
+    def first():
+        pass
+    async def testIt():
+        return {'retAsync':'ok'}
+    def afterAsync(retAsync):
+        nonlocal afterRunner
+        afterRunner = True
+        assert retAsync == 'ok'
+        return 'finished'
+    
+    gen = runner.addPipe(Pipe('test').add(first,testIt,afterAsync)).executeWithAsyncBucket(bucket)
+    assert next(gen) == None
+    assert 'retAsync' not in runner.data
+    assert not afterRunner, 'afterAsync must not be executed for now'
+    bucket.execute()
+    assert runner.data['retAsync'] == 'ok'
+    assert next(gen) == 'finished'
