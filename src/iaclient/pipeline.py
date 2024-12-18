@@ -72,35 +72,82 @@ class PipeInstanciable(RulesAccess):
     def __init__(self, pipeName):
 
         super().__init__(pipeName)
-    
-import inspect
 
+import inspect
+import asyncio
+
+class AsyncTaskBucket:
+    def __init__(self):
+        self._bucket = []
+    def add(self, fn,callback):
+        self._bucket.append((fn,callback))
+
+    def execute(self):
+        data = asyncio.run(self._executeAsync())
+        for dataWithCallback in data:
+            dataWithCallback[1](dataWithCallback[0])
+
+    async def _executeAsync(self):
+        tasksWithCallback:list[tuple[asyncio.Task,callable]] = []
+        async with asyncio.TaskGroup() as tg:
+            for fn in self._bucket:
+                tasksWithCallback.append((tg.create_task(fn[0]()),fn[1]))
+        dataWithCallback:list[tuple[any,callable]] = []
+        for taskWithCallback in tasksWithCallback:
+            dataWithCallback.append((taskWithCallback[0].result(), taskWithCallback[1]))
+        return dataWithCallback
+    
 class PipeRunner:
 
     def __init__(self):
         self._pipes:dict[str,Pipe] = {}
         self.executionList = []
-        self.data = {}
+        self.data = {'lastReturn':None}
         self.controller =  Controller()
 
     def addPipe(self, pipe:Pipe):
         self._pipes[pipe.pipeName] = pipe
         return self
     
-    def execute(self):
+    def executeWithAsyncBucket(self,bucket:AsyncTaskBucket):
+        ret = {'data':None}
+        for ret in self._generatorExecute():
+            if ret['type'] == 'async':
+                bucket.add(ret['data'][0], ret['data'][1])
+                yield
+        yield ret['data']
+        
+    def _initPipe(self):
         for pipe in self._pipes.values():
             pipe._onPipesCreated._origin = pipe.pipeName
             self._fnWrapper(pipe._onPipesCreated)
         self._makePipe()
-        res = None
+
+    def _generatorExecute(self):
+        self._initPipe()
         for fn in self.executionList:
+            if inspect.iscoroutinefunction(fn):
+                yield {'type':'async','data':(lambda: self._fnWrapper(fn), self._asyncCallback())}
+                continue
+            
             newRes = self._fnWrapper(fn)
             if not newRes == None:
-                res = newRes
+                self.data['lastReturn'] = newRes
             if self.controller._finish:
                 break
-        return res
-        
+        yield {'type':'finish','data':self.data['lastReturn']}
+
+    def execute(self):
+        ret = None
+        for ret in self._generatorExecute():
+            pass
+        return ret['data']
+    
+    def _asyncCallback(self):
+        def callback(data):
+            self.data.update(data)
+        return callback
+
     def _makePipe(self):
         rulesAdd:list[Rule] = []
         rulesLinked:dict[str,Rule] = {}
