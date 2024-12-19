@@ -16,8 +16,11 @@ class Rule:
 class Controller:
     def __init__(self):
         self._finish = False
+        self._instance = []
     def finish(self):
         self._finish = True
+    def instancePipe(self,name:str,additionalData = {}):
+        self._instance.append((name, additionalData))
 
 class RulesAccess:
     def __init__(self):
@@ -65,7 +68,7 @@ class Pipe(RulesInsertion):
         self._onPipesCreated = func
         return self
     
-class PipeInstanciable(RulesAccess):
+class PipeInstanciable(RulesInsertion):
     """Pipe instantiate only by call from controller.
     
     When called create a new sub pipe. rules added with `before` and `after` is added on calling in."""
@@ -75,6 +78,7 @@ class PipeInstanciable(RulesAccess):
 
 import inspect
 import asyncio
+from functools import wraps
 
 class AsyncTaskBucket:
     def __init__(self):
@@ -97,15 +101,66 @@ class AsyncTaskBucket:
             dataWithCallback.append((taskWithCallback[0].result(), taskWithCallback[1]))
         return dataWithCallback
     
+def addLinkedsRules(rule:Rule, execList:list,rulesLinked:dict[str,list[Rule]]):
+    fnName = rule.fn.__name__
+    if fnName not in rulesLinked:
+        return
+    links = rulesLinked[fnName]
+    for ruleLinked in links:
+        n = 1 if ruleLinked.mode == RuleMode.MODE_AFTER else 0
+        execList.insert(execList.index(rule.fn) + n, ruleLinked.fn)
+        addLinkedsRules(ruleLinked, execList, rulesLinked)  
+
+def makePipeline(pipes:list[Pipe],wrapper):
+    rulesAdd:list[Rule] = []
+    rulesLinked:dict[str,Rule] = {}
+    execList = []
+    ignoreAdd = False
+    for pipe in pipes:
+        if isinstance(pipe, PipeInstanciable):
+            ignoreAdd = True
+        elif not wrapper(pipe._activate):
+            continue
+        for rule in pipe.rules:
+            rule.fn._origin = rule.pipe
+            if rule.mode == RuleMode.MODE_ADD:
+                if ignoreAdd and not isinstance(pipe,PipeInstanciable):
+                    continue
+                rulesAdd.append(rule)
+                continue
+            value = rule.linked
+            if value not in rulesLinked:
+                rulesLinked[value] = []
+            rulesLinked[value].append(rule)
+    for rule in rulesAdd:
+        execList.append(rule.fn)
+        addLinkedsRules(rule, execList, rulesLinked)
+    return execList
+
 class PipeRunner:
 
-    def __init__(self):
+    def __init__(self,executionList = []):
         self._pipes:dict[str,Pipe] = {}
-        self.executionList = []
+        self.executionList = executionList
+        self.subExecList = {}
         self.data = {'lastReturn':None}
+        self._instances = {}
         self.controller =  Controller()
 
-    def addPipe(self, pipe:Pipe):
+    def createPipe(self,name:str,activator = None):
+        pipe = Pipe(name, activator)
+        self.addPipe(pipe)
+        return pipe
+    
+    def createInstanciablePipe(self, name:str):
+        pipe = PipeInstanciable(name)
+        self._instances[pipe._ruleName] = pipe
+        return pipe
+    
+    def addPipe(self, pipe):
+        if isinstance(pipe, PipeInstanciable):
+            self._instances[pipe._ruleName] = pipe
+            return self
         self._pipes[pipe.pipeName] = pipe
         return self
     
@@ -120,27 +175,40 @@ class PipeRunner:
     def _initPipe(self):
         for pipe in self._pipes.values():
             pipe._onPipesCreated._origin = pipe.pipeName
-            self._fnWrapper(pipe._onPipesCreated)
-        self._makePipe()
+            self._executeFnWithWrapper(pipe._onPipesCreated)
+        self._makeMainPipe()
 
     def _generatorExecute(self):
         self._initPipe()
         for fn in self.executionList:
             if inspect.iscoroutinefunction(fn):
-                yield {'type':'async','data':(lambda: self._fnWrapper(fn), self._asyncCallback())}
+                yield {'type':'async','data':(lambda: self._executeFnWithWrapper(fn), self._asyncCallback())}
                 continue
             
-            newRes = self._fnWrapper(fn)
+            newRes = self._executeFnWithWrapper(fn)
             if not newRes == None:
                 self.data['lastReturn'] = newRes
             if self.controller._finish:
                 break
+
+            for instanceName,data in self.controller._instance:
+                subRunner = PipeRunner(self.subExecList[instanceName])
+                subRunner.data.update(self.data)
+                subRunner.data.update(data)
+                for subRet in subRunner._generatorExecute():
+                    if subRet['type'] == 'finish':
+                        self.data['lastReturn'] = subRet['data']
+                        
+                    if subRet['type'] == 'async':
+                        yield subRet
         yield {'type':'finish','data':self.data['lastReturn']}
 
     def execute(self):
         ret = None
         for ret in self._generatorExecute():
-            pass
+            if ret['type'] == 'async':
+                res = asyncio.run(ret['data'][0]())
+                ret['data'][1](res)
         return ret['data']
     
     def _asyncCallback(self):
@@ -148,38 +216,25 @@ class PipeRunner:
             self.data.update(data)
         return callback
 
-    def _makePipe(self):
-        rulesAdd:list[Rule] = []
-        rulesLinked:dict[str,Rule] = {}
-        execList = []
-        for pipe in self._pipes.values():
-            if not self._fnWrapper(pipe._activate):
-                continue
-            for rule in pipe.rules:
-                rule.fn._origin = rule.pipe
-                if rule.mode == RuleMode.MODE_ADD:
-                    rulesAdd.append(rule)
-                    continue
-                value = rule.linked
-                if value not in rulesLinked:
-                    rulesLinked[value] = []
-                rulesLinked[value].append(rule)
-        for rule in rulesAdd:
-            execList.append(rule.fn)
-            self._addLinkeds(rule, execList, rulesLinked)
-        self.executionList = execList
-
-    def _addLinkeds(self, rule:Rule, execList:list,rulesLinked:dict[str,list[Rule]]):
-        fnName = rule.fn.__name__
-        if fnName not in rulesLinked:
+    def _makeMainPipe(self):
+        if(len(self.executionList)):
             return
-        links = rulesLinked[fnName]
-        for ruleLinked in links:
-            n = 1 if ruleLinked.mode == RuleMode.MODE_AFTER else 0
-            execList.insert(execList.index(rule.fn) + n, ruleLinked.fn)
-            self._addLinkeds(ruleLinked, execList, rulesLinked)
-
+        execListInstances = {}
+        mainPipes = self._pipes.values()
+        for namePipe,pipe in self._instances.items():
+            pipes = [pipe]
+            pipes.extend(mainPipes)
+            execListInstances[namePipe] = makePipeline(pipes, self._executeFnWithWrapper)
+        self.subExecList = execListInstances
+        self.executionList = makePipeline(mainPipes,self._executeFnWithWrapper)
+ 
     def _fnWrapper(self,fn):
+        @wraps(fn)
+        def wrapper():
+            return self._executeFnWithWrapper(fn)
+        return wrapper
+    
+    def _executeFnWithWrapper(self,fn):
         params = inspect.signature(fn).parameters
         props = list(params.keys())
         args = []
@@ -197,4 +252,5 @@ class PipeRunner:
             else:
                 args.append(self.data[prop])
         return fn(*args)
-    
+    def __repr__(self):
+        return 'Pipeline:\n\n' + 'Execution order:' + ", ".join([x.__name__ + '('+x._origin +')' for x in self.executionList]) + '.'
