@@ -108,7 +108,8 @@ def test_finish():
     
 def test_activator():
     runner = PipeRunner()
-    def trueActivator1():
+    def trueActivator1(testData:str):
+        assert testData == 'test'
         return True
     def falseActivator():
         return False
@@ -123,6 +124,7 @@ def test_activator():
     pipe2 = Pipe('test2').add(other).activator(falseActivator)
     pipe3 = Pipe('test3').after('other',cantByAdded)
 
+    runner.data['testData'] = 'test'
     runner.addPipe(pipe2).addPipe(pipe1).addPipe(pipe3).execute()
     assert ['first'] == [x.__name__ for x in runner.executionList]
 
@@ -136,10 +138,10 @@ def test_afterWithBefore():
         pass
     def trueFirst():
         pass
-    pipe1 = Pipe('test').add(trueFirst,first)
-    pipe2 = Pipe('test2').after('first', other).before('other', afterOther)
+    runner.createPipe('test').add(trueFirst,first)
+    runner.createPipe('test2').after('first', other).before('other', afterOther)
 
-    runner.addPipe(pipe2).addPipe(pipe1).execute()
+    runner.execute()
     assert ['trueFirst','first','afterOther','other'] == [x.__name__ for x in runner.executionList]
 
 def test_AsyncTaskBucket():
@@ -163,3 +165,45 @@ def test_AsyncTaskBucket():
     bucket.execute()
     assert runner.data['retAsync'] == 'ok'
     assert next(gen) == 'finished'
+
+def test_execute_NotAfectedByAsync():
+    runner = PipeRunner()
+    def first():
+        pass
+    async def second():
+        return {'a':'new-data'}
+    def third(data):
+        assert data['a'] == 'new-data'
+        return 'finished'
+    runner.createPipe('test').add(first, second, third)
+    res = runner.execute()
+    assert res == 'finished'
+    assert runner.data['a'] == 'new-data'
+    
+def test_InstanciablePipe():
+    runner = PipeRunner()
+    executedSub = False
+    def sub1(data):
+        assert 'passThat' in data
+        assert data['passThat'] == 'passed'
+    def sub2():
+        nonlocal executedSub
+        executedSub = True
+        return 'that'
+    def neverExec1():
+        assert False, "It should never being executed"
+    def main1(controller:Controller):
+        controller.instancePipe('sub',{'passThat':'passed'})
+    def main2(data):
+        assert not 'passThat' in data, 'data passed to sub pipeline not is isolated in main execution'
+        assert data['lastReturn'] == 'that'
+    def beforesub2():
+        pass
+    runner.createPipe('test').add(main1,main2).before('sub2', beforesub2)
+    runner.createInstanciablePipe('sub').add(sub1, sub2)
+    runner.createInstanciablePipe('never').add(neverExec1)
+    runner.execute()
+    assert ['main1','main2'] == [x.__name__ for x in runner.executionList]
+    assert ['sub1','beforesub2','sub2'] == [x.__name__ for x in runner.subExecList['sub']]
+    assert ['neverExec1'] == [x.__name__ for x in runner.subExecList['never']]
+    assert executedSub, "Instanciable pipeline is called but don't run"
