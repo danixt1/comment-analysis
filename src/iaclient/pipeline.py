@@ -108,6 +108,8 @@ def addLinkedsRules(rule:Rule, execList:list,rulesLinked:dict[str,list[Rule]]):
     links = rulesLinked[fnName]
     for ruleLinked in links:
         n = 1 if ruleLinked.mode == RuleMode.MODE_AFTER else 0
+        if ruleLinked.fn in execList:
+            continue
         execList.insert(execList.index(rule.fn) + n, ruleLinked.fn)
         addLinkedsRules(ruleLinked, execList, rulesLinked)  
 

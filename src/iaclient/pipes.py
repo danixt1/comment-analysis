@@ -90,7 +90,7 @@ def requestData(batch:list[Comment],prompt:PromptInfo,index:int,main:IAClient,pr
 
 def attachDataFromRequest(main:IAClient,requestData:RequestProcess,batch:list[Comment], process:Process):
     data = requestData.data
-    for i in range(len(data) - 1):
+    for i in range(len(data)):
         message,msgData = batch[i],data[i]
         message.attachInfo(msgData, main.clientName, process.id)
         
@@ -106,20 +106,20 @@ def onPipesCreatedScorer(pipe:Pipe,pipes,data,main:IAClient):
     if main.autoTestPercentage == 0.0:
         return
     data['autoTestPercentage'] = main.autoTestPercentage
-    if 'cache' in pipes:
-        pipe.after('getFromCache',addTestComments)
-    else:
-        pipe.before('addBatchs',addTestComments)
+    #FIX: its dont tell if cache is active or not.
+    pipe.after('getFromCache',addTestComments)
+    pipe.before('addBatchs',addTestComments)
+
 def addTestComments(data,comments:list[Comment]):
     from src.datasets.makeDataset import makeData
     quantity = int(len(comments) * data['autoTestPercentage']) or 1
     distribuition = int(len(comments) / quantity)
     tests = makeData(quantity)
     tests = [CommentScorer(**x) for x in tests]
-    comments = [x for x in comments]
+    data['comments'] = [x for x in comments]
     testIndex =0
     for i in range(len(comments) -1,0,-distribuition):
-        comments.insert(i, tests[testIndex])
+        data['comments'].insert(i, tests[testIndex])
         testIndex+=1 
 def removeTestsComment(requestData:RequestProcess,main,index,data):
     batch = data['batch']
@@ -137,5 +137,5 @@ def initPipeRunner(runner:PipeRunner):
     runner.createPipe('cache',activateCache).before('addBatchs', getFromCache).after('endRequest',saveToCache)
     runner.createPipe("batchs").add(addBatchs,prepareBatchsToProcess)
     runner.createPipe("requests").add(makeRequests)
-    runner.createPipe('scorer',activateScorer).after('requestData', removeTestsComment).onPipesCreated(onPipesCreatedScorer)
+    runner.createPipe('scorer',activateScorer).after('attachDataFromRequest', removeTestsComment).onPipesCreated(onPipesCreatedScorer)
     runner.createInstanciablePipe('requestToAi').add(requestData, attachDataFromRequest, endRequest)
