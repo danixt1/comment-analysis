@@ -82,11 +82,13 @@ def requestData(batch:list[Comment],prompt:PromptInfo,index:int,main:IAClient,pr
             controller.finish()
             return
         dataInRequest = requestData.data
-        if len(dataInRequest) > len(dataInRequest):
-            requestData.setHallucinationError("Returned more data than the expected")
-            requestData.finish()
+        if len(dataInRequest) > len(batch):
+            requestData.setHallucinationError("Returned more data than the expected").finish()
+            process.getRequest(requestData, index)
+            controller.finish()
+            return
         data['requestData'] = requestData
-        break
+        return
 
 def attachDataFromRequest(main:IAClient,requestData:RequestProcess,batch:list[Comment], process:Process):
     data = requestData.data
