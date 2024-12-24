@@ -27,13 +27,15 @@ class ClientManager(ManagerBase):
     
     @classmethod
     def _beforeCreate(cls, config: dict):
-        if 'scorer' in config:
+        data = config['scorer'] if 'scorer' in config else None
+        if data:
             del config['scorer']
+            return {'scorer':data}
 
     @classmethod
     def _afterCreate(cls, item:IAClient, config: dict,data:dict):
-        if 'scorer' in config:
-            percentage = config['scorer']['percentage']
+        if 'scorer' in data:
+            percentage = data['scorer']['percentage']
             percentage = (1 / 100) * percentage
             item.useAutoTest(percentage)
             
