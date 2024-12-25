@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 
 class BaseGraphic(ABC):
-    
+    gname = 'not-set'
     def __init__(self, 
                  intervals:DateInterval, 
                  title:str = None, xlabel:str = None, ylabel:str = None,fig:Figure = None, axes:Axes = None):

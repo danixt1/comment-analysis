@@ -3,6 +3,7 @@ import numpy as np
 from .graphic import BaseGraphic
 
 class PercentageGraphic(BaseGraphic):
+    gname = "median"
     def _plot(self,legends, data, ax):
         ax.plot(legends, data, linewidth=2.0)
         ax.set_yticks(np.arange(0, 101, 10))

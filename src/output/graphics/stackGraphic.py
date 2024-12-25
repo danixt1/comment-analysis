@@ -7,7 +7,7 @@ QUESTION_COLOR = '#f2ec38'
 NEUTRAL_COLOR = '#bfbfbf'
 
 class StackGraphic(BaseGraphic):
-
+    gname = 'stack'
     def _makeData(self, intervals):
         keys = ['positive','negative','neutral','question']
         behaviors = {key:[] for key in keys}

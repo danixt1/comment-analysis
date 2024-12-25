@@ -1,0 +1,18 @@
+{
+    "en":{
+        "median":{
+            "title":"Percentage of Positive Comments by Date"
+        },
+        "stack":{
+            "title":"Total of comments by date"
+        }
+    },
+    "pt":{
+        "median":{
+            "title":"Porcentagem de Comentários Positivos por Data"
+        },
+        "stack":{
+            "title":"Total de comentários por data"
+        }
+    }
+}
