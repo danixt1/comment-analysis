@@ -11,11 +11,11 @@ MATCH_FULL_POSITIONS = r"\[[^\]]+\]"
 MATCH_VARIATIONS = r"[^|]+"
 
 
-def makeData(limit:int,exclude_tags = [],searchIn = commentsData):
+def makeData(limit:int,exclude_tags = [],searchIn = commentsData,timestamps = None,maxPositives = 0.70):
     counts ={'positive':0, 'negative':0,'-':0}
     totalCount = 0
     stopProcess = False
-    maxPositives = int(limit * 0.70)
+    maxPositives = int(limit * maxPositives)
     comments = []
     addComment = lambda data,msg = None: comments.append(
         {
@@ -51,6 +51,13 @@ def makeData(limit:int,exclude_tags = [],searchIn = commentsData):
 
     for c in searchIn:
         behavior = c['behavior']
+        if 'tags' in c:
+            skipMessage = False
+            for tag in  c['tags']:
+                if tag in exclude_tags:
+                    skipMessage = True
+            if skipMessage:
+                continue
         if stopProcess:
             break
         if 'message' in c:
@@ -61,6 +68,9 @@ def makeData(limit:int,exclude_tags = [],searchIn = commentsData):
             continue
         else:
             raise Exception(f"Unknown comment type: {c}")
+    if timestamps:
+        for x in comments:
+            x['timestamp'] = random.randint(timestamps[0],timestamps[1])
     random.shuffle(comments)
     return comments
         
