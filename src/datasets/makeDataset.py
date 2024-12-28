@@ -11,7 +11,7 @@ MATCH_FULL_POSITIONS = r"\[[^\]]+\]"
 MATCH_VARIATIONS = r"[^|]+"
 
 
-def makeData(limit:int,exclude_tags = [],searchIn = commentsData,timestamps = None,maxPositives = 0.70):
+def makeData(limit:int,exclude_tags = None,searchIn = commentsData,timestamps = None,maxPositives = 0.70):
     counts ={'positive':0, 'negative':0,'-':0}
     totalCount = 0
     stopProcess = False
@@ -51,7 +51,7 @@ def makeData(limit:int,exclude_tags = [],searchIn = commentsData,timestamps = No
 
     for c in searchIn:
         behavior = c['behavior']
-        if 'tags' in c:
+        if 'tags' in c and exclude_tags:
             skipMessage = False
             for tag in  c['tags']:
                 if tag in exclude_tags:
@@ -69,8 +69,11 @@ def makeData(limit:int,exclude_tags = [],searchIn = commentsData,timestamps = No
         else:
             raise Exception(f"Unknown comment type: {c}")
     if timestamps:
+        intervals = int((timestamps[1] - timestamps[0]) / len(comments))
+        actPart = timestamps[0]
         for x in comments:
-            x['timestamp'] = random.randint(timestamps[0],timestamps[1])
+            x['timestamp'] = actPart
+            actPart += intervals
     random.shuffle(comments)
     return comments
         
@@ -94,8 +97,11 @@ def getVariations(text:str,combinations = None):
 def makeCSV(outFile:str,config:dict = {'limit':100},useData = commentsData):
     import csv
     data = makeData(**config,searchIn=useData)
+    fieldnames = ['message', 'type', 'origin']
+    if 'timestamps' in config:
+        fieldnames.append('timestamp')
     with open(outFile, 'w', newline='', encoding='utf-8') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=['message', 'type','origin'])
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for row in data:
             del row['expected']
