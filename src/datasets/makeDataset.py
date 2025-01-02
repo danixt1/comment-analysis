@@ -11,7 +11,7 @@ MATCH_FULL_POSITIONS = r"\[[^\]]+\]"
 MATCH_VARIATIONS = r"[^|]+"
 
 
-def makeData(limit:int,exclude_tags = None,searchIn = commentsData,timestamps = None,maxPositives = 0.70):
+def makeData(limit:int,exclude_tags = None,searchIn = commentsData,timestamps = None,maxPositives = 0.70,seed = None):
     counts ={'positive':0, 'negative':0,'-':0}
     totalCount = 0
     stopProcess = False
@@ -74,6 +74,8 @@ def makeData(limit:int,exclude_tags = None,searchIn = commentsData,timestamps = 
         for x in comments:
             x['timestamp'] = actPart
             actPart += intervals
+    if seed:
+        random.seed(seed)
     random.shuffle(comments)
     return comments
         
