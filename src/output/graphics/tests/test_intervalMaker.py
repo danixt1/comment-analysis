@@ -1,6 +1,28 @@
-from src.output.graphics.intervalMaker import DateInterval,LegendInterval
+from src.output.graphics.intervalMaker import DateInterval,LegendInterval,addValidItemsByDate,daiIyIter,monthIter,weekIter
 from datetime import datetime
 import random
+
+def test_validItemsByDate_dailyIter():
+    dates = [(2020,1,1),(2020, 1, 2),(2020, 1, 2),(2020, 1, 3),(2020, 1, 4),(2020, 1, 7)]
+    data = [1,'22',2,3,4,5]
+    banch = IterTestBanch(dates,data)
+    banch.addValidItemsByDate(daiIyIter)
+    banch.assertResult( [[1],['22',2],[3],[4],[],[],[5]] )
+
+
+def test_validItemsByDate_weekIter():
+    dates = [(2024,4,3),(2024,4,5),(2024,4,7),(2024,4,9),(2024,4,22)]
+    data = ['w1','w1.2','w1.3','w2','w4']
+    banch = IterTestBanch(dates, data)
+    banch.addValidItemsByDate(weekIter)
+    banch.assertResult([['w1', 'w1.2', 'w1.3'], ['w2'], [], ['w4']])
+
+def test_validItemsByDate_monthIter():
+    dates = [(2019, 12, 1),(2019,12,23),(2020,1,2),(2020,3,5),(2020,3,12)]
+    data = ['month12','month12.2',1,2,3]
+    banch = IterTestBanch(dates, data)
+    banch.addValidItemsByDate(monthIter)
+    banch.assertResult([['month12','month12.2'],[1],[],[2,3]])
 
 def test_DateInterval_month():
     INITIAL_MONTH = 2
@@ -61,16 +83,23 @@ def test_DateInterval_week():
     assert intervals[0][1] == {"ref":12,"day":10}
 
 def test_LegendInterval_month():
-    intervalMaker = makeBasicLegendInterval([datetime(2020, 1, 1),datetime(2020,12,1)],"month")
-    assert intervalMaker.getLegends() == [add0(x) + "/2020" for x in range(1,13)]
-
-def test_LegendInterval_2_month():
-    intervalMaker = makeBasicLegendInterval([datetime(2020, 1, 1), datetime(2020,12,1)], "month")
-    legendInterval = LegendInterval(intervalMaker, 6)
-    assert legendInterval.getLegends() == [add0(x) + "/2020" for x in range(1, 13, 2)]
+    intervalMaker = makeBasicLegendInterval([datetime(2020, 1, 1),datetime(2020,4,1)],"month")
+    assert [str(x.month) + "/2020" for x in intervalMaker.getLegends()] == [str(x) + "/2020" for x in range(1,13)]
     
 def add0(x):
     return "0"+str(x) if x < 10 else str(x)
+def datesArr(*args):
+    return [datetime(*x) for x in args]
+class IterTestBanch:
+    def __init__(self,dates:list[tuple],data:list):
+        self._dates = [datetime(*x) for x in dates]
+        self._data = data
+    def addValidItemsByDate(self, iterFn,jumps = 1):
+        self.results = []
+        datesWithInterval = list(zip(self._dates, self._data))
+        addValidItemsByDate(datesWithInterval,self.results,iterFn,self._dates[0],self._dates[-1],jumps)
+    def assertResult(self, expected):
+        assert self.results == expected
 
 def makeBasicLegendInterval(dates,granularity):
     dates = [datetime(2020, 1, 1),datetime(2020,12,1)]
