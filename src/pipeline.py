@@ -16,9 +16,11 @@ def run(path:str | None = None):
     with open(path,'r') as f:
         import json
         config = json.load(f)
+
     expireCacheTime = config['expireCacheTime'] if 'expireCacheTime' in config else 60*60*24
     mainCache = Cache('1.0')
-    mainCache.deleteExpiredCache(expireCacheTime)
+    if expireCacheTime > 0:
+        mainCache.deleteExpiredCache(expireCacheTime)
     
     collector = CollectorManager.initWithConfig(config['collector'],mainCache)
     processor = ClientManager.initWithConfig(config['processing'],mainCache)
