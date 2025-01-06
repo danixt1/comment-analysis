@@ -51,7 +51,7 @@ class IAClient(ABC):
 
         process = Process(self.clientName)
         runner = PipeRunner()
-        runner.data.update({'comments':comments,'main':self,'process':process})
+        runner.data.update({'comments':comments,'main':self,'process':process,'clientName':self.clientName})
         initPipeRunner(runner)
         runner.execute()
         process.finish()
