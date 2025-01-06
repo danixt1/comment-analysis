@@ -67,6 +67,9 @@ class LegendInterval():
             self._legendMonth()
         else:
             raise Exception('invalid granularity')
+        
+        self.legends[0] = self.startDate
+        self.legends[-1] = self.endDate
 
     def _legendYear(self):
         startYear = self.startDate.year
@@ -92,14 +95,8 @@ class LegendInterval():
         startDate = self.startDate
         endDate = self.endDate
 
-        startDay = startDate.day
-        endDay = endDate.day
-
-        if startDate.month == endDate.month:
-            self.legends = [add0(startDay + i) for i in range(endDay - startDay)]
-            return
         for date in daiIyIter(startDate, endDate, 1):
-            self.legends.append(f"{add0(date.day)}/{add0(date.month)}")
+            self.legends.append(date)
 
     def getLegends(self):
         return self.legends
@@ -162,5 +159,6 @@ def yeaIter(start, end,jump):
 
     for date in rrule(freq=YEARLY, dtstart=startDate, until=endDate):
         yield datetime(date.year, 12, 31, 23, 59, 59)
+        
 def getLastDayOfMonth(date):
     return calendar.monthrange(date.year, date.month)[1]
