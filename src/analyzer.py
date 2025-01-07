@@ -24,9 +24,10 @@ Options:
 
   deps         output the pip install command with the dependencies of the project
   -c --config   set the config file to by used in command generation.
-     --sudo     add "sudo" to the start of the commant
-     
-  dataset
+     --sudo     add "sudo" to the start of the command.
+  -i --install  run pip install.
+
+  dataset      automatic build CSV datasets.
   -p --path     path with the dataset file to output the CSV data
   -l --limit    limit of data to generate (default {limit})"""
 # Check if no arguments are provided
@@ -57,10 +58,12 @@ if 'start' in args:
     import src.pipeline as pipeline
     pipeline.run(config)
     exit()
+
 if 'deps' in args:
     import src.dependency as deps
-    deps.run(config,haveCmd('','sudo'))
+    deps.run(config,haveCmd('','sudo'),haveCmd('i', 'install'))
     exit()
+
 if 'dataset' in args:
     import src.datasets.makeDataset as dataset
     if filepath is None:
