@@ -10,6 +10,7 @@ class CollectorCSV(CollectorBase):
         self.csvPath = path
         self.delimiter = delimiter
         self.header = header
+        self.encoding = encoding
 
     def checkConnection(self):
         return path.exists(self.csvPath)
@@ -17,7 +18,7 @@ class CollectorCSV(CollectorBase):
     def collect(self) -> list[Comment]:
         comments = []
         header = self.header
-        with open(self.csvPath,newline='',encoding='utf-8') as fileCSV:
+        with open(self.csvPath,newline='',encoding=self.encoding) as fileCSV:
             csvReader = csv.reader(fileCSV,delimiter=self.delimiter)
             if(not header):
                 header = next(csvReader)

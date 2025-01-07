@@ -5,8 +5,11 @@ import json
 labelsData = None
 
 class OutputGraphic(OutputBase):
-    def __init__(self,path:str = 'output.png',lang = 'en',granularity = None):
-        self.path = path
+    
+    def __init__(self,filename:str = 'output',lang = 'en',granularity = None):
+        if not filename.endswith('.png'):
+            filename += '.png'
+        self.path = filename
         self.lang = lang
         self.granularity = granularity
         global labelsData
