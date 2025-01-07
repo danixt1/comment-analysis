@@ -19,5 +19,6 @@ def wordpressDep(config):
 COLLECTORS_DEPS = {
     "csv":None,
     "dbapi":dbapiDep,
-    "wordpress":wordpressDep
+    "wordpress":wordpressDep,
+    "tester":""
 }

@@ -1,3 +1,4 @@
 OUTPUTS_DEPS = {
-    'mongodb':'pymongo'
+    'mongodb':'pymongo',
+    'graphic':'matplotlib'
 }
