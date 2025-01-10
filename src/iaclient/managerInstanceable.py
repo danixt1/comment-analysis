@@ -1,8 +1,5 @@
 from src.managerBase import ManagerBase
-
+PREFIX = 'src.iaclient.'
 def initInstanceables(managerClass:ManagerBase):
 
-    from .geminiClient import GeminiClient
-
-    managerClass.addInstanceable('gemini',GeminiClient)
-    
+    managerClass.addInstanceable('gemini',(PREFIX+'geminiClient'))

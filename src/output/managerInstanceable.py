@@ -1,9 +1,7 @@
 from src.managerBase import ManagerBase
 
+PREFIX = 'src.output.'
 def initInstanceables(managerClass:ManagerBase):
-
-    from .outputMongoDb import OutputMongoDb
-    from .outputGraphic import OutputGraphic
     
-    managerClass.addInstanceable('graphic',OutputGraphic)
-    managerClass.addInstanceable('mongodb',OutputMongoDb)
+    managerClass.addInstanceable('graphic',(PREFIX + 'outputGraphic','OutputGraphic'))
+    managerClass.addInstanceable('mongodb',(PREFIX + 'outputGraphic','OutputGraphic'))

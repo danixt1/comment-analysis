@@ -1,13 +1,10 @@
 from src.managerBase import ManagerBase
 
-def initInstanceables(managerClass:ManagerBase):
+PREFIX = 'src.collector.'
 
-    from .collectorCSV import CollectorCSV
-    from .collectorDBAPI import CollectorDBAPI
-    from .collectorWordPress import CollectorWordPress
-    from .collectorTester import CollectorTester
+def initInstanceables(managerClass:ManagerBase):
     
-    managerClass.addInstanceable("csv", CollectorCSV)
-    managerClass.addInstanceable("dbapi",CollectorDBAPI)
-    managerClass.addInstanceable("wordpress", CollectorWordPress)
-    managerClass.addInstanceable("tester", CollectorTester)
+    managerClass.addInstanceable("csv", (PREFIX +'collectorCSV','CollectorCSV'))
+    managerClass.addInstanceable("dbapi",(PREFIX +'collectorDBAPI','CollectorDBAPI'))
+    managerClass.addInstanceable("wordpress", (PREFIX +'collectorWordPress','CollectorWordPress'))
+    managerClass.addInstanceable("tester", (PREFIX+'collectorTester','CollectorTester'))
