@@ -1,12 +1,18 @@
 from abc import ABC
 from src.cache import Cache
+import importlib
+import sys
 
 def raiseInvalStr(obj, propName):
     if not propName in obj:
         raise KeyError(propName + ' not found in config')
     if not isinstance(obj[propName], str):
         raise TypeError(propName + ' must be a string')
-    
+def addLibAndRetClass(modName,className):
+    module = importlib.import_module(modName)
+    importlib.invalidate_caches()
+    return getattr(module,className)
+
 class ManagerBase(ABC):
     
     def __init_subclass__(cls) -> None:
@@ -25,8 +31,8 @@ class ManagerBase(ABC):
     def _afterCreate(cls,item,config:dict,data:dict):
         pass
     @classmethod
-    def addInstanceable(cls,name, instanceable):
-        cls._builders[name] = (lambda config: instanceable(**config)) if isinstance(instanceable,type) else instanceable
+    def addInstanceable(cls,name, data):
+        cls._builders[name] = data if callable(data) else (lambda config: addLibAndRetClass(data[0],data[1])(**config))
     
     @classmethod
     def initWithConfig(cls,config,cache:Cache = None):
