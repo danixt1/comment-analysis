@@ -27,10 +27,11 @@ def MakeFakeManagerClass():
     return FakeManager
 
 def test_manager_init():
+    IMPORT_NAME = 'src.tests.test_managerBase'
     FakeManagerClass = MakeFakeManagerClass()
-    FakeManagerClass.addInstanceable('test1', Fake1)
-    FakeManagerClass.addInstanceable('test2', Fake2)
-    manager = FakeManagerClass.initWithConfig({
+    FakeManagerClass.addInstanceable('test1', (IMPORT_NAME,'Fake1'))
+    FakeManagerClass.addInstanceable('test2', (IMPORT_NAME,'Fake2'))
+    FakeManagerClass.initWithConfig({
         "customProp": "work",
         "data":[
             {

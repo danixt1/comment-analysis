@@ -15,7 +15,7 @@ class FakeClient(IAClient):
         self.comments = comments
         return [comments]
     
-ClientManager.addInstanceable('test',FakeClient)
+ClientManager.addInstanceable('test',('src.iaclient.tests.test_clientManager','FakeClient'))
 
 def test_clientManagerWithScorer():
     setPromptsPath("src/iaclient/tests/prompt")
