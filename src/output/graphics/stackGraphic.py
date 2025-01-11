@@ -25,8 +25,14 @@ class StackGraphic(BaseGraphic):
         colors=[POSITIVE_COLOR,NEGATIVE_COLOR,NEUTRAL_COLOR,QUESTION_COLOR]
         values = data.values()
         max_value = max(np.sum([*values], axis=0)) + 2
-        intervals = int(max_value / 10 ) or 1
-        labels = data.keys()
-        ax.stackplot(legends, values,colors=colors, labels=labels, alpha=1)
+        intervals = int(max_value / 7 ) or 1
+        labels = list(data.keys())
+        bottom = np.zeros(len(legends))
+        for label,d in data.items():
+            arr = np.array(d)
+            ax.bar(legends,arr,3,label=label,bottom=bottom,color = colors[labels.index(label)])
+            bottom += arr
+        #ax.stackplot(legends, values,colors=colors, labels=labels, alpha=1)
         ax.legend(loc='upper left', reverse=False)
-        ax.set(yticks=np.arange(intervals,max_value,intervals))
+        ax.set_xticks(legends)
+        ax.set_yticks(np.arange(intervals,max_value,intervals))
