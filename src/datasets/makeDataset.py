@@ -11,23 +11,49 @@ MATCH_FULL_POSITIONS = r"\[[^\]]+\]"
 MATCH_VARIATIONS = r"[^|]+"
 
 
-def makeData(limit:int,exclude_tags = None,searchIn = commentsData,timestamps = None,maxPositives = 0.70,seed = None):
+def normalizeData(data,msg):
+    return {
+        'message':msg,
+        'type':data['type'] if 'type' in data else 'comment',
+        'origin':'test',
+        'spam':data['spam'] if 'spam' in data else False,
+        'behavior':data['behavior'] if 'behavior' in data else '-',
+        'min_problems':data['min_problems'] if 'min_problems' in data else 0
+    }
+def testerData(data):
+    return {
+        'message':data['message'],
+        'type':data['type'],
+        'origin':'test',
+        "expected":{
+            'spam':data['spam'],
+            'behavior':data['behavior'],
+            'min_problems':data['min_problems']
+        }
+    }
+def commentData(data):
+    return {
+        'message':data['message'],
+        'type':data['type'],
+        'origin':'test',
+        'process':[
+            {
+                "name":"test",
+                "data":{
+                    'spam':data['spam'],
+                    'behavior':data['behavior'] if not data['behavior'] == '-' else 'neutral'
+                },
+                "process_id":random.randint(200,510000000)
+            }
+        ]
+    }
+def makeData(limit:int,exclude_tags = None,searchIn = commentsData,timestamps = None,maxPositives = 0.70,seed = None, useDataStructure = testerData):
     counts ={'positive':0, 'negative':0,'-':0}
     totalCount = 0
     stopProcess = False
     maxPositives = int(limit * maxPositives)
     comments = []
-    addComment = lambda data,msg = None: comments.append(
-        {
-            'message':data['message'] if msg is None else msg, 
-            'type':data['type'] if 'type' in data else 'comment', 
-            'origin':'test',
-            'expected':{
-                'spam':data['spam'] if 'spam' in data else False,
-                'behavior':data['behavior'] if 'behavior' in data else '-',
-                'min_problems':data['min_problems'] if 'min_problems' in data else 0
-            }
-        })
+    addComment = lambda data,msg = None: comments.append(useDataStructure(normalizeData(data,msg)))
     def addToCount(behavior):
         nonlocal totalCount, stopProcess
         if behavior == 'positive' and counts['positive'] >= maxPositives:
