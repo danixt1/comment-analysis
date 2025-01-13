@@ -67,9 +67,6 @@ class LegendInterval():
             self._legendMonth()
         else:
             raise Exception('invalid granularity')
-        
-        #self.legends[0] = self.startDate
-        #self.legends[-1] = self.endDate
 
     def _legendYear(self):
         startYear = self.startDate.year
@@ -82,7 +79,8 @@ class LegendInterval():
 
         for date in monthIter(self.startDate,self.endDate,jumpMonths):
             legends.append(date.replace(day=1))
-
+        legends[0] = self.startDate
+        legends[-1] = datetime(self.endDate.year, self.endDate.month, 1)
         self.legends = legends
     def _legendWeek(self):
         legends = []

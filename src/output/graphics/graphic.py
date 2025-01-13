@@ -4,6 +4,7 @@ from matplotlib.axes import Axes
 from .intervalMaker import DateInterval
 import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
+import matplotlib.dates as mdates
 
 class BaseGraphic(ABC):
     gname = 'not-set'
@@ -36,6 +37,14 @@ class BaseGraphic(ABC):
         if not self.fig and not self.axes:
             fig, ax = plt.subplots()
         self.plotInAxes(ax)
+        granularity = self.intervals.granularity
+        if granularity == 'year':
+            ax.xaxis.set_major_locator(mdates.YearLocator())
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+        elif granularity == 'month':
+            ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y/%m'))
+        
         return fig
     
     def plotInAxes(self,ax:Axes):

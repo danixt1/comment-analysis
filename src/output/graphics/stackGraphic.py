@@ -34,5 +34,4 @@ class StackGraphic(BaseGraphic):
             bottom += arr
         #ax.stackplot(legends, values,colors=colors, labels=labels, alpha=1)
         ax.legend(loc='upper left', reverse=False)
-        ax.set_xticks(legends)
         ax.set_yticks(np.arange(intervals,max_value,intervals))
