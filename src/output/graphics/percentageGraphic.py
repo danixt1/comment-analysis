@@ -1,8 +1,8 @@
 import numpy as np
 
-from .graphic import BaseGraphic
+from .graphic import DateGraphic
 
-class PercentageGraphic(BaseGraphic):
+class PercentageGraphic(DateGraphic):
     gname = "median"
     def _plot(self,legends, data, ax):
         ax.plot(legends, data, linewidth=2.0)
