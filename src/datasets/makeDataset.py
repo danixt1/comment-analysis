@@ -18,7 +18,8 @@ def normalizeData(data,msg):
         'origin':'test',
         'spam':data['spam'] if 'spam' in data else False,
         'behavior':data['behavior'] if 'behavior' in data else '-',
-        'min_problems':data['min_problems'] if 'min_problems' in data else 0
+        'min_problems':data['min_problems'] if 'min_problems' in data else 0,
+        'problems':data['problems'] if "problems" in data else []
     }
 def testerData(data):
     return {
@@ -41,7 +42,8 @@ def commentData(data):
                 "name":"test",
                 "data":{
                     'spam':data['spam'],
-                    'behavior':data['behavior'] if not data['behavior'] == '-' else 'neutral'
+                    'behavior':data['behavior'] if not data['behavior'] == '-' else 'neutral',
+                    'problems':data['problems']
                 },
                 "process_id":random.randint(200,510000000)
             }
