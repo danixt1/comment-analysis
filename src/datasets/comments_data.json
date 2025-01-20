@@ -47,6 +47,14 @@
     },
     {
         "lang":"pt",
+        "tags":["product","physical","damaged"],
+        "messages":["A tela não liga mesmo depois de carregar não funciona",
+        "eu instalei a placa de video certinho e não funcionou veio queimado"],
+        "behavior":"negative",
+        "problems":["damaged"]
+    },
+    {
+        "lang":"pt",
         "tags":["product","physical","delivery"],
         "messages":["gostei bastante da [geladeira|air fryer] mas demorou muito...",
         "celular excelente mas entrega foi demorada...",
