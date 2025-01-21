@@ -5,6 +5,9 @@
         },
         "stack":{
             "title":"Total of comments by date"
+        },
+        "pie":{
+            "title":"Percentage of problems"
         }
     },
     "pt":{
@@ -13,6 +16,9 @@
         },
         "stack":{
             "title":"Total de comentários por data"
+        },
+        "pie":{
+            "title":"Porcentagem de problemas"
         }
     }
 }

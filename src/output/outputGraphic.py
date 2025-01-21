@@ -21,17 +21,20 @@ class OutputGraphic(OutputBase):
         import matplotlib.pyplot as plt
         from src.output.graphics.percentageGraphic import PercentageGraphic
         from src.output.graphics.stackGraphic import StackGraphic
-
+        from src.output.graphics.pieGraphic import PieGraphic
         timestampsAndComments = [(x.timestamp,x) for x in comments if x.timestamp is not None and x.getData() is not None]
         dateInterval = DateInterval(timestampsAndComments,granularity=self.granularity)
         langData = labelsData[lang]
         if dateInterval.endDate.timestamp() - dateInterval.startDate.timestamp() < 60 * 60 * 24 * 2:
             return
-        fig,axes = plt.subplots(2,1,figsize=(10,7))
-
-        percentage =PercentageGraphic(dateInterval,langData['median']['title'],fig=fig,axes=axes[0])
-        stack = StackGraphic(dateInterval,langData['stack']['title'],fig=fig,axes=axes[1])
+        fig,axes = plt.subplots(2,2,figsize=(15,7))
+        plt.subplots_adjust(hspace= 0.45)
+        percentage =PercentageGraphic(dateInterval,langData['median']['title'],fig=fig,axes=axes[0,0])
+        stack = StackGraphic(dateInterval,langData['stack']['title'],fig=fig,axes=axes[1,0])
+        pie = PieGraphic(comments, langData['pie']['title'], fig=fig, axes=axes[0,1])
+        axes[1,1].axis('off')
         percentage.makeGraphic()
+        pie.makeGraphic()
         stack.save(self.path)
     def sendData(self, comments, processResults):
         self._makeGraphics(comments,self.lang)
