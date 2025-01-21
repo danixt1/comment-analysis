@@ -6,8 +6,11 @@
         "stack":{
             "title":"Total of comments by date"
         },
-        "pie":{
+        "problems-pie":{
             "title":"Percentage of problems"
+        },
+        "behaviors-pie":{
+            "title":"Total observed behaviors."
         }
     },
     "pt":{
@@ -17,8 +20,11 @@
         "stack":{
             "title":"Total de comentários por data"
         },
-        "pie":{
+        "problems-pie":{
             "title":"Porcentagem de problemas"
+        },
+        "behaviors-pie":{
+            "title":"Total de comportamentos observados."
         }
     }
 }
