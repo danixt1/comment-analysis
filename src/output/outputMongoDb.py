@@ -42,6 +42,8 @@ class OutputMongoDb(OutputBase):
                     comments_id[comment_local_id] = comment_db_id
 
         for comment in toInsert:
+            if comment['local_id'] not in comments_id:
+                continue
             comment['_id'] = comments_id[comment['local_id']]
             del comment['local_id']
             for processInfo in comment['process']:
