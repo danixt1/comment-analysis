@@ -1,6 +1,6 @@
 {
     "en":{
-        "median":{
+        "median-line":{
             "title":"Percentage of Positive Comments by Date"
         },
         "stack":{
@@ -14,7 +14,7 @@
         }
     },
     "pt":{
-        "median":{
+        "median-line":{
             "title":"Porcentagem de Comentários Positivos por Data"
         },
         "stack":{

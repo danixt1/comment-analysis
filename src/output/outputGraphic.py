@@ -19,7 +19,7 @@ class OutputGraphic(OutputBase):
 
     def _makeGraphics(self,comments:list[Comment],lang = "en"):
         import matplotlib.pyplot as plt
-        from src.output.graphics.percentageGraphic import PercentageGraphic
+        from src.output.graphics.lineGraphic  import PercentageBehaviorLineGraphic
         from src.output.graphics.stackGraphic import StackGraphic
         from src.output.graphics.pieGraphic import ProblemsPieGraphic,BehaviorPieGraphic
 
@@ -31,7 +31,7 @@ class OutputGraphic(OutputBase):
         fig,axes = plt.subplots(2,2,figsize=(12,5))
         plt.subplots_adjust(hspace= 0.25)
 
-        percentage =PercentageGraphic(dateInterval,langData['median']['title'],fig=fig,axes=axes[0,0])
+        percentage =PercentageBehaviorLineGraphic(dateInterval,langData['median-line']['title'],fig=fig,axes=axes[0,0])
         StackGraphic(dateInterval,langData['stack']['title'],fig=fig,axes=axes[1,0]).makeGraphic()
         ProblemsPieGraphic(comments, langData['problems-pie']['title'], fig=fig, axes=axes[0,1]).makeGraphic()
         BehaviorPieGraphic(comments, langData['behaviors-pie']['title'], fig=fig, axes=axes[1, 1]).makeGraphic()
