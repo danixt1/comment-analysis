@@ -1,5 +1,5 @@
 from src.comment import Comment
-from src.iaclient.promptInfo import PromptInfo
+from src.aiclient.promptInfo import PromptInfo
 
 from .client import IAClient
 from .requestProcess import RequestProcess

@@ -1,6 +1,6 @@
-from src.iaclient.clientManager import ClientManager
-from src.iaclient.client import IAClient
-from src.iaclient.promptInfo import PromptInfo, setPromptsPath
+from src.aiclient.clientManager import ClientManager
+from src.aiclient.client import IAClient
+from src.aiclient.promptInfo import PromptInfo, setPromptsPath
 from src.comment import Comment, CommentScorer
 
 class FakeClient(IAClient):
@@ -15,10 +15,10 @@ class FakeClient(IAClient):
         self.comments = comments
         return [comments]
     
-ClientManager.addInstanceable('test',('src.iaclient.tests.test_clientManager','FakeClient'))
+ClientManager.addInstanceable('test',('src.aiclient.tests.test_clientManager','FakeClient'))
 
 def test_clientManagerWithScorer():
-    setPromptsPath("src/iaclient/tests/prompt")
+    setPromptsPath("src/aiclient/tests/prompt")
     config = {
         "data":[
             {

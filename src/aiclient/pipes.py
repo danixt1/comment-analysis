@@ -1,9 +1,9 @@
 from src.cache import Cache
 from src.comment import Comment,CommentScorer
-from src.iaclient.pipeline import Pipe,Controller,PipeRunner
-from src.iaclient.process import Process,RequestProcess
-from src.iaclient.client import IAClient
-from src.iaclient.promptInfo import PromptInfo
+from src.aiclient.pipeline import Pipe,Controller,PipeRunner
+from src.aiclient.process import Process,RequestProcess
+from src.aiclient.client import IAClient
+from src.aiclient.promptInfo import PromptInfo
 import logging
 logger = logging.getLogger(__name__)
 

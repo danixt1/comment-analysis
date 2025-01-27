@@ -1,4 +1,4 @@
-from src.iaclient.pipeline import PipeRunner,Pipe,Controller, AsyncTaskBucket
+from src.aiclient.pipeline import PipeRunner,Pipe,Controller, AsyncTaskBucket
 
 def test_argsPassing():
     runner = PipeRunner()

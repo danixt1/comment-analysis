@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from src.collector.collectorManager import CollectorManager
-from src.iaclient.clientManager import ClientManager
+from src.aiclient.clientManager import ClientManager
 from src.output.outputManager import OutputManager
 from src.cache import Cache
 import logging

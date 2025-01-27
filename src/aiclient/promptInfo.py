@@ -33,4 +33,4 @@ def setPromptsPath(path):
     prompts.clear()
     promptPath =Path(path)
     prompts.extend([ExtractData(txt) for txt in promptPath.glob("*.txt")])
-setPromptsPath("src/iaclient/prompts")
+setPromptsPath("src/aiclient/prompts")

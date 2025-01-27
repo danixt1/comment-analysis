@@ -30,7 +30,7 @@ class FakeClient(IAClient):
         request.setData(self.retData).setTokensInput(2).setTokensOutput(5)
 
 def test_client_flux():
-    setPromptsPath("src/iaclient/tests/prompt")
+    setPromptsPath("src/aiclient/tests/prompt")
     client = FakeClient([{"behavior":"neutral"},{"behavior":"happy"},{"behavior":"angry"}])
     comments = [Comment('def','comment','test') for x in range(6)]
     result = client.analyze(comments)
@@ -42,7 +42,7 @@ def test_client_flux():
     assert client.countReqs == 2
 
 def test_client_with_auto_test():
-    setPromptsPath("src/iaclient/tests/prompt")
+    setPromptsPath("src/aiclient/tests/prompt")
     rets = [
         {"behavior":"neutral"},{"behavior":"happy"},{"behavior":"angry"},
     ]

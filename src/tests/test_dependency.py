@@ -3,7 +3,7 @@ from src.deps.IAclients import IACLIENTS_DEPS
 from src.deps.outputs import OUTPUTS_DEPS
 
 from src.collector.managerInstanceable import initInstanceables as collectorInstances
-from src.iaclient.managerInstanceable import initInstanceables as AIClientsInstances
+from src.aiclient.managerInstanceable import initInstanceables as AIClientsInstances
 from src.output.managerInstanceable import initInstanceables as outputInstances
 
 from src.managerBase import ManagerBase
