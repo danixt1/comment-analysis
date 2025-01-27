@@ -1,7 +1,7 @@
 from src.comment import Comment
 from src.aiclient.promptInfo import PromptInfo
 
-from .client import IAClient
+from .client import AiClient
 from .requestProcess import RequestProcess
 
 import logging
@@ -26,7 +26,7 @@ schema = {
         }
     }
 }
-class GeminiClient(IAClient):
+class GeminiClient(AiClient):
     KNOW_PROBLEMS = ['delivery','damaged']
     def __init__(self,model = "gemini-1.5-flash",prefix:str = None):
         super().__init__('google:'+model)

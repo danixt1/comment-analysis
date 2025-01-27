@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class IAClient(ABC):
+class AiClient(ABC):
     """
     Processing flux:
     1. analyze: analyze is called (DON'T overide)

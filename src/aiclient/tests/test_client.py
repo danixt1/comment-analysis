@@ -1,10 +1,10 @@
 from ..promptInfo import PromptInfo, setPromptsPath
-from ..client import IAClient
+from ..client import AiClient
 from ...comment import Comment,CommentScorer
 from ..requestProcess import RequestProcess
 from typing import List
 
-class FakeClient(IAClient):
+class FakeClient(AiClient):
 
     def __init__(self,retData):
         super().__init__("test-client")

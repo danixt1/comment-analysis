@@ -2,14 +2,14 @@ from src.cache import Cache
 from src.comment import Comment,CommentScorer
 from src.aiclient.pipeline import Pipe,Controller,PipeRunner
 from src.aiclient.process import Process,RequestProcess
-from src.aiclient.client import IAClient
+from src.aiclient.client import AiClient
 from src.aiclient.promptInfo import PromptInfo
 import logging
 logger = logging.getLogger(__name__)
 
 
 # Cache
-def activateCache(main:IAClient,data):
+def activateCache(main:AiClient,data):
     if not hasattr(main,"_cache"):
         return False
     data['cache'] = main._cache
@@ -46,11 +46,11 @@ def saveToCache(batch:list[Comment],cache:Cache):
     cache.add(data)
 
 # Batchs
-def addBatchs(main:IAClient,comments:list[Comment], data):
+def addBatchs(main:AiClient,comments:list[Comment], data):
     batchs = main._separateCommentsBatch(comments)
     batchs = [x for x in batchs if len(x)]
     data['batchs'] = batchs
-def prepareBatchsToProcess(main:IAClient,process:Process, data,batchs:list[list[Comment]]):
+def prepareBatchsToProcess(main:AiClient,process:Process, data,batchs:list[list[Comment]]):
     reqInfos = []
     for batch in batchs:
         prompt = main._generatePrompt(batch)
@@ -64,7 +64,7 @@ def makeRequests(data,controller:Controller):
     for batch, prompt, index in reqInfos:
         controller.instancePipe('requestToAi',{'batch':batch,'prompt':prompt,'index':index})
 
-def requestData(batch:list[Comment],prompt:PromptInfo,index:int,main:IAClient,process:Process,controller:Controller,data):
+def requestData(batch:list[Comment],prompt:PromptInfo,index:int,main:AiClient,process:Process,controller:Controller,data):
     logger.info(f"client {main.clientName}:requesting analyze for batch with {len(batch)} comments...")
     maxRetrys = 4
     while maxRetrys:
@@ -90,7 +90,7 @@ def requestData(batch:list[Comment],prompt:PromptInfo,index:int,main:IAClient,pr
         data['requestData'] = requestData
         return
 
-def attachDataFromRequest(main:IAClient,requestData:RequestProcess,batch:list[Comment], process:Process):
+def attachDataFromRequest(main:AiClient,requestData:RequestProcess,batch:list[Comment], process:Process):
     data = requestData.data
     for i in range(len(data)):
         message,msgData = batch[i],data[i]
@@ -104,7 +104,7 @@ def endRequest(requestData:RequestProcess,process:Process,index:int):
 
 activateScorer = lambda main: main.autoTestPercentage > 0.0
 
-def onPipesCreatedScorer(pipe:Pipe,pipes,data,main:IAClient):
+def onPipesCreatedScorer(pipe:Pipe,pipes,data,main:AiClient):
     if main.autoTestPercentage == 0.0:
         return
     data['autoTestPercentage'] = main.autoTestPercentage

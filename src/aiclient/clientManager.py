@@ -1,4 +1,4 @@
-from .client import IAClient
+from .client import AiClient
 from src.managerBase import ManagerBase
 from src.comment import Comment
 from .managerInstanceable import initInstanceables
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class ClientManager(ManagerBase):
     def __init__(self,scorer = None) -> None:
         super().__init__()
-        self._items:list[IAClient] = []
+        self._items:list[AiClient] = []
         self._scorerPercentage = 0
         if scorer:
             if not 'percentage' in scorer:
@@ -33,7 +33,7 @@ class ClientManager(ManagerBase):
             return {'scorer':data}
 
     @classmethod
-    def _afterCreate(cls, item:IAClient, config: dict,data:dict):
+    def _afterCreate(cls, item:AiClient, config: dict,data:dict):
         if 'scorer' in data:
             percentage = data['scorer']['percentage']
             percentage = (1 / 100) * percentage

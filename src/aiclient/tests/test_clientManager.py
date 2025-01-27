@@ -1,9 +1,9 @@
 from src.aiclient.clientManager import ClientManager
-from src.aiclient.client import IAClient
+from src.aiclient.client import AiClient
 from src.aiclient.promptInfo import PromptInfo, setPromptsPath
 from src.comment import Comment, CommentScorer
 
-class FakeClient(IAClient):
+class FakeClient(AiClient):
     def __init__(self):
         super().__init__('fake-client')
         self.comments = []
