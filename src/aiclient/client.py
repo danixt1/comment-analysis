@@ -1,10 +1,10 @@
 from .clientObserver import ClientObserver
-from abc import ABC,abstractmethod
 from .promptInfo import PromptInfo
 from .process import Process
 from .requestProcess import RequestProcess
 from ..comment import Comment
 import logging
+from abc import ABC,abstractmethod
 
 logger = logging.getLogger(__name__)
 
@@ -45,18 +45,40 @@ class AiClient(ABC):
     def _makeRequestToAi(self,prompt:PromptInfo,request:RequestProcess):
         pass
 
-    def analyze(self,comments: list[Comment]):
-        from .pipes import initPipeRunner
-        from .pipeline import PipeRunner
-
+    def analyze(self,comments: list[Comment],resultFn = None):
+        from .analyzeStructure import (ResultEnum,cacheActive,cacheGetCachedComments,cacheSaveRequestComments,
+                                       batchGenerateBatch,batchPrepareBatchsToProcess,
+                                       requestGenerateData,requestAttachData,requestEnd,
+                                       scorerAdd,scorerRemoveScorerFromRequest)
+        lastResult:ResultEnum = None
+        def defLastResult(x):
+            nonlocal lastResult
+            lastResult = x
+            return x
+        resultFn = resultFn if resultFn else defLastResult
         process = Process(self.clientName)
-        runner = PipeRunner()
-        runner.data.update({'comments':comments,'main':self,'process':process,'clientName':self.clientName})
-        initPipeRunner(runner)
-        runner.execute()
+        data = {"main":self, "comments":comments,"process":process}
+
+        cacheActive(data,resultFn)
+        cacheGetCachedComments(data, resultFn)
+        if lastResult == ResultEnum.STOP:
+            process.finish()
+            return process.toDict()
+        scorerAdd(data, resultFn)
+        batchGenerateBatch(data, resultFn)
+        batchPrepareBatchsToProcess(data, resultFn)
+        reqInfos = data['request_data']
+
+        for batch, prompt, index in reqInfos:
+            data.update({'batch':batch,'prompt':prompt,'index':index})
+            requestGenerateData(data,resultFn)
+            requestAttachData(data, resultFn)
+            scorerRemoveScorerFromRequest(data, resultFn)
+            cacheSaveRequestComments(data, resultFn)
+            requestEnd(data, resultFn)
         process.finish()
         return process.toDict()
     
     def addObserver(self,observer: ClientObserver):
         self.observer = observer
-__all__ = ["IaClient"]
+        
