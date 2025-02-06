@@ -39,6 +39,8 @@ class RequestProcess:
         self.end = int(round(time.time() * 1000))
     def setHallucinationError(self, details = ''):
         return self._setError("hallucination", details)
+    def setPartialDataError(self, details = ''):
+        return self._setError("partial-data", details)
     def setTimeoutError(self,details=""):
         return self._setError("timeout",details)
     
