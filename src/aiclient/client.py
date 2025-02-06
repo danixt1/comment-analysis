@@ -19,11 +19,12 @@ class AiClient(ABC):
         2. _makeRequestToAi: pass the prompt generated and request the data, expected the JSON with the comments.
     Obs: Always return the data from comments in the SAME order of the input.
     """
-    def __init__(self,clientName):
+    def __init__(self,clientName,tolerance = 2):
         self.observers:list[ClientObserver] = []
         self.clientName = clientName
         self.autoTestPercentage = 0
-        logger.info(f'initializing IA client {clientName}')
+        self.tolerance = tolerance
+        logger.info(f'initializing AI client {clientName}')
     def useAutoTest(self,percentage = 0.20):
         self.autoTestPercentage = percentage
     def isUsingAutoTest(self):
@@ -48,7 +49,7 @@ class AiClient(ABC):
     def analyze(self,comments: list[Comment],resultFn = None):
         from .analyzeStructure import (ResultEnum,cacheActive,cacheGetCachedComments,cacheSaveRequestComments,
                                        batchGenerateBatch,batchPrepareBatchsToProcess,
-                                       requestGenerateData,requestAttachData,requestEnd,
+                                       requestGenerateData,requestAttachData,requestEnd,requestTryFixError,
                                        scorerAdd,scorerRemoveScorerFromRequest)
         lastResult:ResultEnum = None
         def defLastResult(x):
@@ -68,10 +69,23 @@ class AiClient(ABC):
         batchGenerateBatch(data, resultFn)
         batchPrepareBatchsToProcess(data, resultFn)
         reqInfos = data['request_data']
-
+        initialReqs = len(reqInfos)
+        limitReqs = int(initialReqs * self.tolerance)
         for batch, prompt, index in reqInfos:
             data.update({'batch':batch,'prompt':prompt,'index':index})
             requestGenerateData(data,resultFn)
+            if lastResult == ResultEnum.ERROR:
+                requestTryFixError(data, resultFn)
+                if len(data['request_data']) > limitReqs:
+                    logger.error(f'client {self.clientName}:Failed processing too many retrys. please try making adjust in AI or increase tolerance limit.')
+                    requestEnd(data, resultFn)
+                    process.finish()
+                    return process.toDict()
+                if lastResult == ResultEnum.ERROR or lastResult == ResultEnum.STOP:
+                    if lastResult == ResultEnum.ERROR:
+                        logger.error(f'Error in request {index} of {self.clientName} canceled.')
+                    requestEnd(data, resultFn)
+                    continue
             requestAttachData(data, resultFn)
             scorerRemoveScorerFromRequest(data, resultFn)
             cacheSaveRequestComments(data, resultFn)

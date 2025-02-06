@@ -70,20 +70,49 @@ def batchGenerateBatch(data,resultFn):
     data['batchs'] = batchs
     return resultFn(ResultEnum.CONTINUE)
 
-def batchPrepareBatchsToProcess(data,resultFn):
-    """Generate the final string prompt"""
+def _batchGeneratePrompt(data,batch:list[Comment]):
     main:AiClient = data['main']
     process:Process = data['process']
+    prompt = main._generatePrompt(batch)
+    index = process.addBatch(prompt,batch)
+    return [batch,prompt,index]
+
+def batchPrepareBatchsToProcess(data,resultFn):
+    """Generate the final string prompt"""
     batchs:list[list[Comment]] = data['batchs']
     reqInfos = []
     for batch in batchs:
-        prompt = main._generatePrompt(batch)
-        index = process.addBatch(prompt,batch)
-        reqInfos.append([batch,prompt,index])
+        reqInfos.append(_batchGeneratePrompt(data,batch))
     data['request_data'] = reqInfos
     resultFn(ResultEnum.CONTINUE)
 
 # Requests
+def requestTryFixError(data, resultFn):
+    requestData:RequestProcess = data['requestData']
+    error = requestData.error
+    if not error:
+        return resultFn(ResultEnum.SKIP)
+    errorName = error[0]
+    if errorName is not "hallucination" or errorName is not "partial-data":
+        return resultFn(ResultEnum.ERROR)
+    batch = data['batch']
+    reqInfos = data['request_data']
+    lenBatch = len(batch)
+    if errorName is "hallucination":
+        logger.warning(f"client {data['main'].clientName}:hallucination error, retrying processing {lenBatch} comments in this batch")
+        for a in [batch[:lenBatch//2],batch[lenBatch//2:]]:
+            reqInfos.append(_batchGeneratePrompt(data, a))
+    else:
+        newBatch = []
+        totalNotProcessedComments = len(batch) - len(data['requestData'].data)
+        if totalNotProcessedComments == 0:
+            return resultFn(ResultEnum.SKIP)
+        logger.warning(f"client {data['main'].clientName}:partial data error, retrying processing {totalNotProcessedComments} comments in this batch")
+        startIndex = len(batch) - totalNotProcessedComments
+        for i in range(startIndex, len(batch)):
+            newBatch.append([batch[i]])
+        reqInfos.append(_batchGeneratePrompt(data, newBatch))
+    return resultFn(ResultEnum.CONTINUE)
 
 def requestGenerateData(data,resultFn):
     batch:list[Comment] = data['batch']
@@ -97,6 +126,7 @@ def requestGenerateData(data,resultFn):
     while maxRetrys:
         maxRetrys-=1
         requestData = RequestProcess( prompt, batch)
+        data['requestData'] = requestData
         main._makeRequestToAi(str(prompt),requestData)
         if requestData.error:
             requestData.finish()
@@ -109,10 +139,13 @@ def requestGenerateData(data,resultFn):
             return resultFn(ResultEnum.ERROR)
         dataInRequest = requestData.data
         if len(dataInRequest) > len(batch):
-            requestData.setHallucinationError("Returned more data than the expected").finish()
+            requestData.setHallucinationError("Returned {} more results than expected.".format(len(dataInRequest) - len(batch))).finish()
             process.getRequest(requestData, index)
             return resultFn(ResultEnum.ERROR)
-        data['requestData'] = requestData
+        elif len(dataInRequest) < len(batch):
+            requestData.setPartialDataError("Returned less data than the expected").finish()
+            process.getRequest(requestData, index)
+            return resultFn(ResultEnum.ERROR)
         return resultFn(ResultEnum.CONTINUE)
 
 def requestAttachData(data,resultFn):
