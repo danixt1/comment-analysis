@@ -93,12 +93,12 @@ def requestTryFixError(data, resultFn):
     if not error:
         return resultFn(ResultEnum.SKIP)
     errorName = error[0]
-    if errorName is not "hallucination" or errorName is not "partial-data":
+    if (not errorName == "hallucination") and (not errorName == "partial-data"):
         return resultFn(ResultEnum.ERROR)
     batch = data['batch']
     reqInfos = data['request_data']
     lenBatch = len(batch)
-    if errorName is "hallucination":
+    if errorName == "hallucination":
         logger.warning(f"client {data['main'].clientName}:hallucination error, retrying processing {lenBatch} comments in this batch")
         for a in [batch[:lenBatch//2],batch[lenBatch//2:]]:
             reqInfos.append(_batchGeneratePrompt(data, a))
@@ -110,7 +110,7 @@ def requestTryFixError(data, resultFn):
         logger.warning(f"client {data['main'].clientName}:partial data error, retrying processing {totalNotProcessedComments} comments in this batch")
         startIndex = len(batch) - totalNotProcessedComments
         for i in range(startIndex, len(batch)):
-            newBatch.append([batch[i]])
+            newBatch.append(batch[i])
         reqInfos.append(_batchGeneratePrompt(data, newBatch))
     return resultFn(ResultEnum.CONTINUE)
 
