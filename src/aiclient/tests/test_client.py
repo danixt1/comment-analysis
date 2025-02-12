@@ -29,6 +29,25 @@ class FakeClient(AiClient):
         self.countReqs+=1
         request.setData(self.retData).setTokensInput(2).setTokensOutput(5)
 
+class FakeClientAutoRetryTest(AiClient):
+    def __init__(self, responses, batchs = None,tolerance=2):
+        self.batchs = batchs
+        self.responses = responses
+        self.actRes = 0
+        self.promptHistoric = []
+        super().__init__("test-retry",tolerance=tolerance)
+    def _separateCommentsBatch(self, comments):
+        return [comments] if self.batchs is None else self.batchs
+    def _generatePrompt(self, comments):
+        self.promptHistoric.append(len(comments))
+        return PromptInfo('test1' if str(comments[0]) == 'prompt1' else 'test2')
+    def _makeRequestToAi(self, prompt, request):
+        if self.actRes >= len(self.responses):
+            raise Exception("No more responses")
+        request.setData(self.responses[self.actRes]).setTokensInput(1).setTokensOutput(3)
+        self.actRes +=1
+    
+
 def test_client_flux():
     setPromptsPath("src/aiclient/tests/prompt")
     client = FakeClient([{"behavior":"neutral"},{"behavior":"happy"},{"behavior":"angry"}])
@@ -58,3 +77,38 @@ def test_client_with_auto_test():
     assert len(client.comments) == TOTAL_COMMENTS_EXPECTED
     assert len([x for x in client.comments if isinstance(x,CommentScorer)]) == TOTAL_COMMENT_SCORER_EXPECTED
     assert 'score' in result
+
+def test_client_auto_retry_on_missing_data():
+    # Make one request to analyze 5 comments but the AI only return the answer of 3 comments.
+    # is expected a second request to two final comments who not is processed in first request.
+    setPromptsPath("src/aiclient/tests/prompt")
+    responses = [
+        [{"behavior":"neutral"},{"behavior":"happy"},{"behavior":"happy"}],
+        [{"behavior":"angry"},{"behavior":"angry"}]
+    ]
+    comments = [Comment('def','comment','test') for _ in range(5)]
+    client = FakeClientAutoRetryTest(responses)
+    result = client.analyze(comments)
+    # First try with the 5 comments, after only returning 3 comment try the two left.
+    assert client.promptHistoric == [5,2]
+    assert client.actRes == 2
+    assert all([comment.getData() for comment in comments]), "Returned comments without data"
+    assert comments[4].getData()['behavior'] == 'angry'
+    assert comments[1].getData()['behavior'] == 'happy'
+
+def test_client_auto_retry_on_hallucination():
+    setPromptsPath("src/aiclient/tests/prompt")
+    responses = [
+        [{'behavior':'angry'},{'behavior':'happy'},{'behavior':'happy'},{'behavior':'neutral'},{'behavior':'angry'},{'behavior':'happy'}],
+        [{'behavior':'happy'},{'behavior':'angry'}],
+        [{'behavior':'neutral'},{'behavior':'angry'}]
+    ]
+    comments = [Comment('def','comment','test') for _ in range(4)]
+    client = FakeClientAutoRetryTest(responses,tolerance=3)
+    result = client.analyze(comments)
+
+    assert client.promptHistoric == [4,2,2]
+    assert client.actRes == 3
+    assert all([comment.getData() for comment in comments]), "Returned comments without data"
+    assert comments[1].getData()['behavior'] == 'angry'
+    assert comments[2].getData()['behavior'] == 'neutral'
