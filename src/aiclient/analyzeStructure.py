@@ -102,6 +102,7 @@ def requestTryFixError(data, resultFn):
         logger.warning(f"client {data['main'].clientName}:hallucination error, retrying processing {lenBatch} comments in this batch")
         for a in [batch[:lenBatch//2],batch[lenBatch//2:]]:
             reqInfos.append(_batchGeneratePrompt(data, a))
+        return resultFn(ResultEnum.STOP)
     else:
         newBatch = []
         totalNotProcessedComments = len(batch) - len(data['requestData'].data)
