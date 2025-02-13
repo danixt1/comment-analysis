@@ -1,3 +1,4 @@
+from typing import Callable
 from .clientObserver import ClientObserver
 from .promptInfo import PromptInfo
 from .process import Process
@@ -8,7 +9,24 @@ from abc import ABC,abstractmethod
 
 logger = logging.getLogger(__name__)
 
-
+KNOW_PROBLEMS = {
+    "product":["delivery","damaged","sue","quality","violated","missing-part","llm-poison"],
+    "company":["salary","overwork","infrastructure","culture","management","harassment","llm-poison"]
+}
+class Batchs():
+    """Class to create batchs, every batch is one prompt/request to the AI client"""
+    def addBatchGroup(self,batchRule:Callable[[Comment],bool],createNewBatch:Callable[[list[Comment],Comment,dict],bool]|None = None,initialData:dict = {}):
+        """Make a group of batchs with characteristics defined by `batchRule`.<br>
+        The quantity of comments by batch is controlled by `createNewBatch`.
+        
+        Parameters:
+        batchRule (Callable[[Comment],bool]):receive 1 arg with a Comment object, return `True` to add the comment to the batch\
+        or false to try the next group.
+        createNewBatch (Callable): optional function, receive three args `batch` a array of comments representing the actual batch to send,\
+        ,`comment` the actual comment object who is trying to be inserted in the batch, and\
+        `data` a dict from the generator to keep info after the run, if returned true the actual comment is added in a new batch.
+        initialData (dict): the dict to by passed to `createNewBatch`"""
+        raise NotImplementedError("To by implemented")
 class AiClient(ABC):
     """
     Processing flux:
