@@ -13,20 +13,86 @@ KNOW_PROBLEMS = {
     "product":["delivery","damaged","sue","quality","violated","missing-part","llm-poison"],
     "company":["salary","overwork","infrastructure","culture","management","harassment","llm-poison"]
 }
-class Batchs():
+class RuleBatchType():
+    def __init__(self,commentType):
+        self.commentType = commentType
+    def __call__(self, comment:Comment):
+        return comment.type == self.commentType
+class BatchbucketManager():
     """Class to create batchs, every batch is one prompt/request to the AI client"""
-    def addBatchGroup(self,batchRule:Callable[[Comment],bool],createNewBatch:Callable[[list[Comment],Comment,dict],bool]|None = None,initialData:dict = {}):
-        """Make a group of batchs with characteristics defined by `batchRule`.<br>
-        The quantity of comments by batch is controlled by `createNewBatch`.
+    def __init__(self,createRule = None,returnNoGroupComments = True):
+        self.batchs = []
+        self.defBatchs = [[]]
+        self.buckets = []
+        self.noGroupComments = returnNoGroupComments
+        self.globalRule = createRule
+        def glRule(batch,comment,data):
+            if not 'chars' in data:
+                data['chars'] = 0
+            data['chars'] += len(str(comment))
+            if data['chars'] > 5000:
+                data['chars'] = 0
+                return False
+            if len(batch) >= 10:
+                return False
+            return True
+        if not self.globalRule:
+            self.globalRule = glRule
+        self.defGroupRule =glRule
+        self.defData = {}
+
+    def addBulkRules(self,bucketRule:Callable[[Comment],bool],makeNewBatch:Callable[[list[Comment],Comment,dict],bool]|None = None,initialData:dict = {}):
+        """Make a bulk of batchs with the comments approved by the function `bucketRule`.<br>
+        The quantity of comments by batch is controlled by `makeNewBatch`.
         
         Parameters:
-        batchRule (Callable[[Comment],bool]):receive 1 arg with a Comment object, return `True` to add the comment to the batch\
+        bucketRule (Callable[[Comment],bool]):receive 1 arg with a Comment object, return `True` to add the comment to the this bucket\
         or false to try the next group.
-        createNewBatch (Callable): optional function, receive three args `batch` a array of comments representing the actual batch to send,\
+        makeNewBatch (Callable): optional function, receive three args `batch` a array of comments representing the actual batch to send,\
         ,`comment` the actual comment object who is trying to be inserted in the batch, and\
-        `data` a dict from the generator to keep info after the run, if returned true the actual comment is added in a new batch.
-        initialData (dict): the dict to by passed to `createNewBatch`"""
-        raise NotImplementedError("To by implemented")
+        `data` a dict from the generator to keep info after the run, if returned true a new batch is generated and the comment is added to the new batch.
+        initialData (dict): the dict to by passed to `makeNewBatch`"""
+        batchs = [[]]
+        self.batchs.append(batchs)
+        self.buckets.append({"bucketRule":bucketRule,"makeNewBatch":makeNewBatch or self.globalRule,"data":initialData,"batchs":batchs})
+
+    def addComments(self,comments:list[Comment]):
+        """Add a list of comments to the batchs, the comments are added in the first group that the `bucketRule` return true."""
+        for comment in comments:
+            self.addComment(comment)
+
+    def addComment(self, comment:Comment):
+        """Add a comment to the batchs, the comment is added in the first group that the `bucketRule` return true."""
+        for group in self.buckets:
+            if group['bucketRule'](comment):
+                batchs:list[list[Comment]] = group['batchs']
+                actBatch = batchs[-1]
+                makeNewBatchFn = group['makeNewBatch']
+                data = group['data']
+                if makeNewBatchFn(actBatch,comment,data):
+                    batchs.append([comment])
+                else:
+                    actBatch.append(comment)
+                return
+        actBatch = self.defBatchs[-1]
+        makeNewBatchFn = self.defGroupRule
+        data = self.defData
+        if makeNewBatchFn(actBatch, comment, data):
+            actBatch.append(comment)
+        else:
+            self.defBatchs.append([comment])
+
+    def getBatchs(self,includesNoGroupComments = None):
+        if includesNoGroupComments is None:
+            includesNoGroupComments = self.noGroupComments
+        """Return the batchs created"""
+        createdBatchs = []
+        for group in self.buckets:
+            createdBatchs.extend(group['batchs'])
+        if len(self.defBatchs) > 0 and includesNoGroupComments:
+            createdBatchs.extend(self.defBatchs)
+        return createdBatchs
+    
 class AiClient(ABC):
     """
     Processing flux:
