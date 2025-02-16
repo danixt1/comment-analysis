@@ -56,7 +56,7 @@ class BatchbucketManager():
         initialData (dict): the dict to by passed to `makeNewBatch`"""
         batchs = [[]]
         self.batchs.append(batchs)
-        self.buckets.append({"bucketRule":bucketRule,"makeNewBatch":makeNewBatch or self.globalRule,"data":initialData,"batchs":batchs})
+        self.buckets.append({"bucketRule":bucketRule,"makeNewBatch":makeNewBatch or self.makeNewBatchDefRule,"data":initialData,"batchs":batchs})
 
     def addComments(self,comments:list[Comment]):
         """Add a list of comments to the batchs, the comments are added in the first group that the `bucketRule` return true."""
