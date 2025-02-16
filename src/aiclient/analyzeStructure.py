@@ -40,7 +40,7 @@ def cacheGetCachedComments(data,resultFn):
             continue
         ret.append(comment)
     if len(ret) == 0:
-        logger.info(f"client {data['clientName']}:all comments already processed")
+        logger.info(f"client {data['main'].clientName}:all comments already processed")
         process.finish()
         return resultFn(ResultEnum.STOP)
     data['comments'] = ret
