@@ -1,5 +1,5 @@
 from ..promptInfo import PromptInfo, setPromptsPath
-from ..client import AiClient, BatchbucketManager,RuleBatchType
+from ..client import AiClient, BatchbucketManager,FilterBatchByType
 from ...comment import Comment,CommentScorer
 from ..requestProcess import RequestProcess
 from typing import List
@@ -113,13 +113,16 @@ def test_client_auto_retry_on_hallucination():
     assert comments[1].getData()['behavior'] == 'angry'
     assert comments[2].getData()['behavior'] == 'neutral'
 
-def test_batchs_render():
+def test_batchBucketManager():
+    import random
     group =BatchbucketManager()
     comments = [Comment('test','group1') for _ in range(5)]
     comments.extend([Comment('test', 'group2') for _ in range(3)])
+    random.shuffle(comments)
     def ruleMakeNewBatch(batch:list[Comment],comment:Comment,data:dict):
         return len(batch) == 2
-    group.addBulkRules(bucketRule=RuleBatchType('group1'),makeNewBatch=ruleMakeNewBatch)
+    group.addBulkRules(bucketRule=FilterBatchByType('group1'),makeNewBatch=ruleMakeNewBatch)
     group.addComments(comments)
     assert len(group.buckets) == 1
     assert [len(x) for x in group.getBatchs(False)] == [2,2,1]
+    assert [len(x) for x in group.defBatchs] == [3]
