@@ -13,11 +13,24 @@ KNOW_PROBLEMS = {
     "product":["delivery","damaged","sue","quality","violated","missing-part","llm-poison"],
     "company":["salary","overwork","infrastructure","culture","management","harassment","llm-poison"]
 }
-class RuleBatchType():
+class FilterBatchByType():
     def __init__(self,commentType):
         self.commentType = commentType
     def __call__(self, comment:Comment):
         return comment.type == self.commentType
+class SplitBatchByCharLimit:
+    def __init__(self,charLimit):
+        self.limit = charLimit
+
+    def __call__(self, batchs,comment,data):
+        if not 'chars' in data:
+            data['chars'] = 0
+        data['chars'] += len(str(comment))
+        if data['chars'] > self.limit:
+            data['chars'] = 0
+            return True
+        return False
+    
 class BatchbucketManager():
     """Class to create batchs, every batch is one prompt/request to the AI client"""
     def __init__(self,createRule = None,returnNoGroupComments = True):
@@ -25,25 +38,14 @@ class BatchbucketManager():
         self.defBatchs = [[]]
         self.buckets = []
         self.noGroupComments = returnNoGroupComments
-        self.globalRule = createRule
-        def glRule(batch,comment,data):
-            if not 'chars' in data:
-                data['chars'] = 0
-            data['chars'] += len(str(comment))
-            if data['chars'] > 5000:
-                data['chars'] = 0
-                return False
-            if len(batch) >= 10:
-                return False
-            return True
-        if not self.globalRule:
-            self.globalRule = glRule
-        self.defGroupRule =glRule
+        self.makeNewBatchDefRule = createRule
+        if not self.makeNewBatchDefRule:
+            self.makeNewBatchDefRule = SplitBatchByCharLimit(5000)
         self.defData = {}
 
     def addBulkRules(self,bucketRule:Callable[[Comment],bool],makeNewBatch:Callable[[list[Comment],Comment,dict],bool]|None = None,initialData:dict = {}):
         """Make a bulk of batchs with the comments approved by the function `bucketRule`.<br>
-        The quantity of comments by batch is controlled by `makeNewBatch`.
+        The quantity of comments by batch is defined by `makeNewBatch` every time True is returned a new batch is created.
         
         Parameters:
         bucketRule (Callable[[Comment],bool]):receive 1 arg with a Comment object, return `True` to add the comment to the this bucket\
@@ -75,21 +77,21 @@ class BatchbucketManager():
                     actBatch.append(comment)
                 return
         actBatch = self.defBatchs[-1]
-        makeNewBatchFn = self.defGroupRule
+        makeNewBatchFn = self.makeNewBatchDefRule
         data = self.defData
         if makeNewBatchFn(actBatch, comment, data):
-            actBatch.append(comment)
-        else:
             self.defBatchs.append([comment])
+        else:
+            actBatch.append(comment)
 
-    def getBatchs(self,includesNoGroupComments = None):
-        if includesNoGroupComments is None:
-            includesNoGroupComments = self.noGroupComments
-        """Return the batchs created"""
+    def getBatchs(self,includesCommentWithoutBucket = None):
+        """Return batchs of comments created by buckets"""
+        if includesCommentWithoutBucket is None:
+            includesCommentWithoutBucket = self.noGroupComments
         createdBatchs = []
         for group in self.buckets:
             createdBatchs.extend(group['batchs'])
-        if len(self.defBatchs) > 0 and includesNoGroupComments:
+        if len(self.defBatchs) > 0 and includesCommentWithoutBucket:
             createdBatchs.extend(self.defBatchs)
         return createdBatchs
     
