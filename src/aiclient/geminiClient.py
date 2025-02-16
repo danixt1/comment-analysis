@@ -1,7 +1,7 @@
 from src.comment import Comment
 from src.aiclient.promptInfo import PromptInfo
 
-from .client import AiClient
+from .client import AiClient,BatchbucketManager,FilterBatchByType
 from .requestProcess import RequestProcess
 
 import logging
@@ -26,6 +26,20 @@ schema = {
         }
     }
 }
+class SplitBatchsByToken:
+    def __init__(self,model,limit):
+        self.model = model
+        self.limit = limit
+    def __call__(self, batch,comment,data):
+        if "totalTokens" not in data:
+            data["totalTokens"] = 0
+        tokens = self.model.count_tokens(str(comment)).total_tokens
+        data["totalTokens"] += tokens
+        if data["totalTokens"] > self.limit:
+            data["totalTokens"] = tokens
+            return True
+        return False
+    
 class GeminiClient(AiClient):
     KNOW_PROBLEMS = ['delivery','damaged']
     def __init__(self,model = "gemini-1.5-flash",prefix:str = None):
@@ -34,28 +48,16 @@ class GeminiClient(AiClient):
         genai.configure(api_key=os.getenv(prefix+'GEMINI_API_KEY'))
 
         self.model = genai.GenerativeModel(model)
-
         self.generation_config=genai.GenerationConfig(
             response_mime_type="application/json", response_schema=schema
         )
+    
     def _separateCommentsBatch(self, comments: list[Comment]) -> list[list[Comment]]:
-        batchs = []
-        partionWorkers = {"len":0,"comments":[]}
-        partionClients = {"len":0,"comments":[]}
-
-        for comment in comments:
-            partion = partionWorkers if comment.type == 'worker' else partionClients
-            msgLen = len(str(comment))
-            if msgLen + partion['len'] > COMMENT_LEN_LIMIT:
-                batchs.append(partion['comments'])
-                partion['comments'] = []
-                partion['len'] = 0
-            partion['len'] += msgLen
-            partion['comments'].append(comment)
-        batchs.append(partionClients['comments'])
-        batchs.append(partionWorkers['comments'])
-
-        return batchs
+        bucket = BatchbucketManager(SplitBatchsByToken(self.model,COMMENT_LEN_LIMIT))
+        bucket.addBulkRules(FilterBatchByType("worker"))
+        bucket.addComments(comments)
+        return bucket.getBatchs(True)
+    
     def _generatePrompt(self, comments: list[Comment]) -> PromptInfo:
         prompt = PromptInfo('worker' if comments[0].type == 'worker' else 'default')
         formatedComments ="".join([f"<comment>{str(x)}</comment>\n" for x in comments])
