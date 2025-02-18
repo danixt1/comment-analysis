@@ -18,6 +18,21 @@ class FilterBatchByType():
         self.commentType = commentType
     def __call__(self, comment:Comment):
         return comment.type == self.commentType
+    
+class SplitBatchsByToken:
+    def __init__(self,getTokens:Callable,tokensLimit:int):
+        self.getTokens = getTokens
+        self.limit = tokensLimit
+    def __call__(self, batch,comment:Comment,data:dict):
+        if "totalTokens" not in data:
+            data["totalTokens"] = 0
+        tokens = self.getTokens(str(comment))
+        data["totalTokens"] += tokens
+        if data["totalTokens"] > self.limit:
+            data["totalTokens"] = tokens
+            return True
+        return False
+    
 class SplitBatchByCharLimit:
     def __init__(self,charLimit):
         self.limit = charLimit
@@ -94,7 +109,21 @@ class BatchbucketManager():
         if len(self.defBatchs) > 0 and includesCommentWithoutBucket:
             createdBatchs.extend(self.defBatchs)
         return createdBatchs
-    
+requestSchemaOpenAI = {
+    "type":"ARRAY",
+    "items":{
+        "type":"OBJECT",
+        "properties":{
+            "spam":{"type":"BOOLEAN"},
+            "behavior":{
+                "type":"STRING",
+                "format":"enum",
+                "enum":["positive","negative","neutral","question"]
+            },
+            "problems":{"type":"ARRAY","nullable":True,"items":{"type":"STRING"}}
+        }
+    }
+}
 class AiClient(ABC):
     """
     Processing flux:
