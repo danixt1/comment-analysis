@@ -32,7 +32,6 @@ class SplitBatchsByToken:
             data["totalTokens"] = tokens
             return True
         return False
-    
 class SplitBatchByCharLimit:
     def __init__(self,charLimit):
         self.limit = charLimit
@@ -46,7 +45,7 @@ class SplitBatchByCharLimit:
             return True
         return False
     
-class BatchbucketManager():
+class BatchBucketManager:
     """Class to create batchs, every batch is one prompt/request to the AI client"""
     def __init__(self,createRule = None,returnNoGroupComments = True):
         self.batchs = []
@@ -63,7 +62,7 @@ class BatchbucketManager():
         
         Parameters:
         bucketRule (Callable[[Comment],bool]):receive 1 arg with a Comment object, return `True` to add the comment to the this bucket\
-        or false to try the next group.
+        or `False` to try the next group.
         makeNewBatch (Callable): optional function, receive three args `batch` a array of comments representing the actual batch to send,\
         ,`comment` the actual comment object who is trying to be inserted in the batch, and\
         `data` a dict from the generator to keep info after the run, if returned true a new batch is generated and the comment is added to the new batch.
@@ -144,13 +143,9 @@ class AiClient(ABC):
     def isUsingAutoTest(self):
         return self.autoTestPercentage > 0
     @abstractmethod
-    def _separateCommentsBatch(self,comments: list[Comment]) -> list[list[Comment]]:
-        """Receive the data to divide in batchs to send to the AI.
-            Divide the data to avoid hallucinations.
-
-            Args:
-                comments: comments to process
-            return the comments batchs to process.
+    def _separateCommentsBatch(self) -> BatchBucketManager:
+        """Separate the comments in batchs, and the batchs is transformed in prompt.<br>
+        Use the `BatchBucketManager` to 
         """
         pass
     @abstractmethod

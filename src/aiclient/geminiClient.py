@@ -1,7 +1,7 @@
 from src.comment import Comment
 from src.aiclient.promptInfo import PromptInfo
 
-from .client import AiClient,BatchbucketManager,FilterBatchByType,SplitBatchsByToken, requestSchemaOpenAI,KNOW_PROBLEMS
+from .client import AiClient,BatchBucketManager,FilterBatchByType,SplitBatchsByToken, requestSchemaOpenAI,KNOW_PROBLEMS
 from .requestProcess import RequestProcess
 
 import logging
@@ -24,11 +24,10 @@ class GeminiClient(AiClient):
             response_mime_type="application/json", response_schema=requestSchemaOpenAI
         )
     
-    def _separateCommentsBatch(self, comments: list[Comment]) -> list[list[Comment]]:
-        bucket = BatchbucketManager(SplitBatchsByToken(lambda text: self.model.count_tokens(text).total_tokens,COMMENT_LEN_LIMIT))
+    def _separateCommentsBatch(self) -> BatchBucketManager:
+        bucket = BatchBucketManager(SplitBatchsByToken(lambda text: self.model.count_tokens(text).total_tokens,COMMENT_LEN_LIMIT))
         bucket.addBucketRules(FilterBatchByType("worker"))
-        bucket.addComments(comments)
-        return bucket.getBatchs(True)
+        return bucket
     
     def _generatePrompt(self, comments: list[Comment]) -> PromptInfo:
         prompt = PromptInfo('worker' if comments[0].type == 'worker' else 'default')

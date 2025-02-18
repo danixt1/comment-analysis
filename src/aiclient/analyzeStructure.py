@@ -65,7 +65,9 @@ def cacheSaveRequestComments(data,resultFn):
 def batchGenerateBatch(data,resultFn):
     main:AiClient = data['main']
     comments:list[Comment] = data['comments']
-    batchs = main._separateCommentsBatch(comments)
+    bucket = main._separateCommentsBatch()
+    bucket.addComments(comments)
+    batchs = bucket.getBatchs(True)
     batchs = [x for x in batchs if len(x)]
     data['batchs'] = batchs
     return resultFn(ResultEnum.CONTINUE)
