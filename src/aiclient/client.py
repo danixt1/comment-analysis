@@ -57,9 +57,8 @@ class BatchbucketManager():
         if not self.makeNewBatchDefRule:
             self.makeNewBatchDefRule = SplitBatchByCharLimit(5000)
         self.defData = {}
-
-    def addBulkRules(self,bucketRule:Callable[[Comment],bool],makeNewBatch:Callable[[list[Comment],Comment,dict],bool]|None = None,initialData:dict = {}):
-        """Make a bulk of batchs with the comments approved by the function `bucketRule`.<br>
+    def addBucketRules(self,bucketRule:Callable[[Comment],bool],makeNewBatch:Callable[[list[Comment],Comment,dict],bool]|None = None,initialData:dict = {}):
+        """Make a bucket of batchs with the comments approved by the function `bucketRule`.<br>
         The quantity of comments by batch is defined by `makeNewBatch` every time True is returned a new batch is created.
         
         Parameters:

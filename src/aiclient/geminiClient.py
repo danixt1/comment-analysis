@@ -26,7 +26,7 @@ class GeminiClient(AiClient):
     
     def _separateCommentsBatch(self, comments: list[Comment]) -> list[list[Comment]]:
         bucket = BatchbucketManager(SplitBatchsByToken(lambda text: self.model.count_tokens(text).total_tokens,COMMENT_LEN_LIMIT))
-        bucket.addBulkRules(FilterBatchByType("worker"))
+        bucket.addBucketRules(FilterBatchByType("worker"))
         bucket.addComments(comments)
         return bucket.getBatchs(True)
     

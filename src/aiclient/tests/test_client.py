@@ -121,7 +121,7 @@ def test_batchBucketManager():
     random.shuffle(comments)
     def ruleMakeNewBatch(batch:list[Comment],comment:Comment,data:dict):
         return len(batch) == 2
-    group.addBulkRules(bucketRule=FilterBatchByType('group1'),makeNewBatch=ruleMakeNewBatch)
+    group.addBucketRules(bucketRule=FilterBatchByType('group1'),makeNewBatch=ruleMakeNewBatch)
     group.addComments(comments)
     assert len(group.buckets) == 1
     assert [len(x) for x in group.getBatchs(False)] == [2,2,1]
