@@ -1,5 +1,5 @@
 from ..promptInfo import PromptInfo, setPromptsPath
-from ..client import AiClient, BatchbucketManager,FilterBatchByType
+from ..client import AiClient, BatchBucketManager,FilterBatchByType
 from ...comment import Comment,CommentScorer
 from ..requestProcess import RequestProcess
 from typing import List
@@ -13,13 +13,22 @@ class FakeClient(AiClient):
         self.actPrompt =0
         self.retData = retData
         self.comments = None
-    def _separateCommentsBatch(self,comments: List[Comment]) -> List[List[Comment]]:
+    def _separateCommentsBatch(self) -> BatchBucketManager:
+        bucket = BatchBucketManager(lambda x, y, z: False)
+        bucket.addBucketRules(FilterBatchByType('lot1'))
+        bucket.addBucketRules(FilterBatchByType('lot2'))
+        return bucket
+    def analyze(self, comments, resultFn=None):
         self.comments = comments
         lot1 = comments[::2]
         lot2 = comments[1::2]
+        for comment in lot1:
+            comment.type = 'lot1'
+        for comment in lot2:
+            comment.type = 'lot2'
         self.expectedLot[0] =len(lot1)
         self.expectedLot[1] = len(lot2)
-        return [lot1,lot2]
+        return super().analyze(comments, resultFn)
     def _generatePrompt(self,comments: List[Comment]):
         assert len(comments) == self.expectedLot[self.actPrompt], "Don't have the expected quantity of comments to the lot"
         self.actPrompt+=1
@@ -36,8 +45,11 @@ class FakeClientAutoRetryTest(AiClient):
         self.actRes = 0
         self.promptHistoric = []
         super().__init__("test-retry",tolerance=tolerance)
-    def _separateCommentsBatch(self, comments):
-        return [comments] if self.batchs is None else self.batchs
+    def _separateCommentsBatch(self):
+        bucker = BatchBucketManager(lambda x,y,z: False)
+        if self.batchs is not  None:
+            bucker.batchs = self.batchs
+        return bucker
     def _generatePrompt(self, comments):
         self.promptHistoric.append(len(comments))
         return PromptInfo('test1' if str(comments[0]) == 'prompt1' else 'test2')
@@ -53,6 +65,7 @@ def test_client_flux():
     client = FakeClient([{"behavior":"neutral"},{"behavior":"happy"},{"behavior":"angry"}])
     comments = [Comment('def','comment','test') for x in range(6)]
     result = client.analyze(comments)
+
     assert client.countReqs == 2
     assert len(result['requests']) == 2
     assert len(result['batchs']) == 2
@@ -73,6 +86,7 @@ def test_client_with_auto_test():
     comments = [Comment('def', 'comment', 'test') for x in range(TOTAL_COMMENTS_PASSED)]
     client.useAutoTest(TOTAL_AUTO_TESTS_PERCENTAGE)
     result = client.analyze(comments)
+
     assert client.countReqs == 2
     assert len(client.comments) == TOTAL_COMMENTS_EXPECTED
     assert len([x for x in client.comments if isinstance(x,CommentScorer)]) == TOTAL_COMMENT_SCORER_EXPECTED
@@ -88,7 +102,7 @@ def test_client_auto_retry_on_missing_data():
     ]
     comments = [Comment('def','comment','test') for _ in range(5)]
     client = FakeClientAutoRetryTest(responses)
-    result = client.analyze(comments)
+    client.analyze(comments)
     # First try with the 5 comments, after only returning 3 comment try the two left.
     assert client.promptHistoric == [5,2]
     assert client.actRes == 2
@@ -105,7 +119,7 @@ def test_client_auto_retry_on_hallucination():
     ]
     comments = [Comment('def','comment','test') for _ in range(4)]
     client = FakeClientAutoRetryTest(responses,tolerance=3)
-    result = client.analyze(comments)
+    client.analyze(comments)
 
     assert client.promptHistoric == [4,2,2]
     assert client.actRes == 3
@@ -115,7 +129,7 @@ def test_client_auto_retry_on_hallucination():
 
 def test_batchBucketManager():
     import random
-    group =BatchbucketManager()
+    group =BatchBucketManager()
     comments = [Comment('test','group1') for _ in range(5)]
     comments.extend([Comment('test', 'group2') for _ in range(3)])
     random.shuffle(comments)
