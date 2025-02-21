@@ -90,7 +90,7 @@ def makeData(limit:int,exclude_tags = None,searchIn = commentsData,timestamps = 
             break
         if 'message' in c:
             if addToCount(behavior):
-                addComment(c)
+                addComment(c, c['message'])
         elif 'messages' in c:
             fromMessages(c)
             continue
