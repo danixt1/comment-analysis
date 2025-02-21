@@ -1,9 +1,11 @@
 from ..promptInfo import PromptInfo, setPromptsPath
-from ..client import AiClient, BatchBucketManager,FilterBatchByType
+from ..client import AiClient, BatchBucketManager,FilterItemByType,BatchRules,SplitBatch
 from ...comment import Comment,CommentScorer
 from ..requestProcess import RequestProcess
 from typing import List
-
+class SplitBatchFalseAlways(SplitBatch):
+    def __call__(self, batch, comment, data):
+        return False
 class FakeClient(AiClient):
 
     def __init__(self,retData):
@@ -14,9 +16,9 @@ class FakeClient(AiClient):
         self.retData = retData
         self.comments = None
     def _separateCommentsBatch(self) -> BatchBucketManager:
-        bucket = BatchBucketManager(lambda x, y, z: False)
-        bucket.addBucketRules(FilterBatchByType('lot1'))
-        bucket.addBucketRules(FilterBatchByType('lot2'))
+        bucket = BatchBucketManager(SplitBatchFalseAlways())
+        bucket.addBatchRule(BatchRules().addComponent(FilterItemByType('lot1')))
+        bucket.addBatchRule(BatchRules().addComponent(FilterItemByType('lot2')))
         return bucket
     def analyze(self, comments, resultFn=None):
         self.comments = comments
@@ -129,14 +131,18 @@ def test_client_auto_retry_on_hallucination():
 
 def test_batchBucketManager():
     import random
+    class SplitBatchWhen2(SplitBatch):
+        def __call__(self, batch, comment, data):
+            return len(batch) == 2
     group =BatchBucketManager()
+    batchRule = BatchRules()\
+        .addComponent(FilterItemByType('group1'))\
+        .addComponent(SplitBatchWhen2())
     comments = [Comment('test','group1') for _ in range(5)]
     comments.extend([Comment('test', 'group2') for _ in range(3)])
     random.shuffle(comments)
-    def ruleMakeNewBatch(batch:list[Comment],comment:Comment,data:dict):
-        return len(batch) == 2
-    group.addBucketRules(bucketRule=FilterBatchByType('group1'),makeNewBatch=ruleMakeNewBatch)
+    group.addBatchRule(batchRule)
     group.addComments(comments)
     assert len(group.buckets) == 1
-    assert [len(x) for x in group.getBatchs(False)] == [2,2,1]
+    assert [len(x) for x in group.getBatchs()] == [2,2,1,3]
     assert [len(x) for x in group.defBatchs] == [3]
