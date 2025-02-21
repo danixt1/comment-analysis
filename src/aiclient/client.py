@@ -3,7 +3,7 @@ from .clientObserver import ClientObserver
 from .promptInfo import PromptInfo
 from .process import Process
 from .requestProcess import RequestProcess
-from ..comment import Comment
+from ..comment import Comment,CommentScorer
 import logging
 from abc import ABC,abstractmethod
 
@@ -13,13 +13,41 @@ KNOW_PROBLEMS = {
     "product":["delivery","damaged","sue","quality","violated","missing-part","llm-poison"],
     "company":["salary","overwork","infrastructure","culture","management","harassment","llm-poison"]
 }
-class FilterBatchByType():
+
+class ScorerModifier(ABC):
+    @abstractmethod
+    def __call__(self, comment:CommentScorer)->None:
+        """Modify the current `commentScorer`"""
+    def exclude_tags(self)->list[str]:
+        return []
+class FilterItem(ABC):
+    @abstractmethod
+    def __call__(self, comment:Comment)->bool:
+        """Return True if the comment is valid"""
+        pass
+    def scorerModifier(self)->None | ScorerModifier:
+        return None
+class SplitBatch(ABC):
+    @abstractmethod
+    def __call__(self, batch:list[Comment], comment:Comment, data:dict)->bool:
+        """Return True if is to end the actual batch and generate a new batch, the actual comment is added to the new batch"""
+        pass
+class ScorerModifierByType(ScorerModifier):
+    def __init__(self, commentType:str):
+        self.commentType = commentType
+    def __call__(self, comment:CommentScorer):
+        comment.type = self.commentType
+
+class FilterItemByType(FilterItem):
     def __init__(self,commentType):
         self.commentType = commentType
+
     def __call__(self, comment:Comment):
         return comment.type == self.commentType
+    def scorerModifier(self):
+        return ScorerModifierByType(self.commentType)
     
-class SplitBatchsByToken:
+class SplitBatchsByToken(SplitBatch):
     def __init__(self,getTokens:Callable,tokensLimit:int):
         self.getTokens = getTokens
         self.limit = tokensLimit
@@ -32,7 +60,7 @@ class SplitBatchsByToken:
             data["totalTokens"] = tokens
             return True
         return False
-class SplitBatchByCharLimit:
+class SplitBatchByCharLimit(SplitBatch):
     def __init__(self,charLimit):
         self.limit = charLimit
 
@@ -44,68 +72,87 @@ class SplitBatchByCharLimit:
             data['chars'] = 0
             return True
         return False
-    
+class BatchRules:
+    def __init__(self):
+        self.splitter:SplitBatch | None = None
+        self.filter:FilterItem = None
+        self.scorerModifier:ScorerModifier | None = None
+
+    def addComponent(self,component: SplitBatch | FilterItem | ScorerModifier):
+        if isinstance(component, SplitBatch):
+            self.splitter = component
+        elif isinstance(component, FilterItem):
+            self.filter = component
+            ScorerModifier = component.scorerModifier()
+            if ScorerModifier and not self.scorerModifier:
+                self.scorerModifier = ScorerModifier
+        elif isinstance(component, ScorerModifier):
+            self.scorerModifier = component
+        else:
+            raise Exception("Invalid component type")
+        return self
+class Batch:
+    def __init__(self,comments:list[Comment],rule:BatchRules = None):
+        self.comments: list[Comment] = comments
+        self.rule:BatchRules | None = rule
+    def __len__(self):
+        return len(self.comments)
+
+    def __getitem__(self, index):
+        return self.comments[index]
+
+    def __iter__(self):
+        return iter(self.comments)
+
+    def __str__(self):
+        return str(self.comments)
+
 class BatchBucketManager:
     """Class to create batchs, every batch is one prompt/request to the AI client"""
-    def __init__(self,createRule = None,returnNoGroupComments = True):
-        self.batchs = []
-        self.defBatchs = [[]]
-        self.buckets = []
-        self.noGroupComments = returnNoGroupComments
-        self.makeNewBatchDefRule = createRule
-        if not self.makeNewBatchDefRule:
-            self.makeNewBatchDefRule = SplitBatchByCharLimit(5000)
+    def __init__(self, defSplitter:SplitBatch | None = None):
+        self.buckets:list[dict] = []
+        self.batchs:list[list[Comment]] = []
+        self.defBatchs:list[list[Comment]] = [[]]
         self.defData = {}
-    def addBucketRules(self,bucketRule:Callable[[Comment],bool],makeNewBatch:Callable[[list[Comment],Comment,dict],bool]|None = None,initialData:dict = {}):
-        """Make a bucket of batchs with the comments approved by the function `bucketRule`.<br>
-        The quantity of comments by batch is defined by `makeNewBatch` every time True is returned a new batch is created.
-        
-        Parameters:
-        bucketRule (Callable[[Comment],bool]):receive 1 arg with a Comment object, return `True` to add the comment to the this bucket\
-        or `False` to try the next group.
-        makeNewBatch (Callable): optional function, receive three args `batch` a array of comments representing the actual batch to send,\
-        ,`comment` the actual comment object who is trying to be inserted in the batch, and\
-        `data` a dict from the generator to keep info after the run, if returned true a new batch is generated and the comment is added to the new batch.
-        initialData (dict): the dict to by passed to `makeNewBatch`"""
+        self.defSplitter:SplitBatch = defSplitter or SplitBatchByCharLimit(5000)
+    def addBatchRule(self, rule:BatchRules,baseData = {}):
+        if not rule.filter:
+            raise Exception("Rule must have a filter")
         batchs = [[]]
         self.batchs.append(batchs)
-        self.buckets.append({"bucketRule":bucketRule,"makeNewBatch":makeNewBatch or self.makeNewBatchDefRule,"data":initialData,"batchs":batchs})
-
-    def addComments(self,comments:list[Comment]):
-        """Add a list of comments to the batchs, the comments are added in the first group that the `bucketRule` return true."""
+        self.buckets.append({"rule":rule,"data":baseData,"batchs":batchs})
+    def addComment(self, comment:Comment):
+        for bucket in self.buckets:
+            rule:BatchRules = bucket['rule']
+            if not rule.filter(comment):
+                continue
+            batchs = bucket['batchs']
+            data = bucket['data']
+            actBatch: list[Comment] = batchs[-1]
+            if rule.scorerModifier and isinstance(comment,CommentScorer):
+                rule.scorerModifier(comment)
+            if rule.splitter and rule.splitter(actBatch, comment, data):
+                actBatch = []
+                batchs.append(actBatch)
+            actBatch.append(comment)
+            return
+        defBatchs = self.defBatchs
+        actBatch: list[Comment] = defBatchs[-1]
+        data = self.defData
+        if self.defSplitter and self.defSplitter(actBatch, comment, data):
+            actBatch = []
+            defBatchs.append(actBatch)
+        actBatch.append(comment)
+    
+    def addComments(self, comments:list[Comment]):
         for comment in comments:
             self.addComment(comment)
-
-    def addComment(self, comment:Comment):
-        """Add a comment to the batchs, the comment is added in the first group that the `bucketRule` return true."""
-        for group in self.buckets:
-            if group['bucketRule'](comment):
-                batchs:list[list[Comment]] = group['batchs']
-                actBatch = batchs[-1]
-                makeNewBatchFn = group['makeNewBatch']
-                data = group['data']
-                if makeNewBatchFn(actBatch,comment,data):
-                    batchs.append([comment])
-                else:
-                    actBatch.append(comment)
-                return
-        actBatch = self.defBatchs[-1]
-        makeNewBatchFn = self.makeNewBatchDefRule
-        data = self.defData
-        if makeNewBatchFn(actBatch, comment, data):
-            self.defBatchs.append([comment])
-        else:
-            actBatch.append(comment)
-
-    def getBatchs(self,includesCommentWithoutBucket = None):
+    def getBatchs(self)->list[Batch]:
         """Return batchs of comments created by buckets"""
-        if includesCommentWithoutBucket is None:
-            includesCommentWithoutBucket = self.noGroupComments
-        createdBatchs = []
+        createdBatchs:list[Batch] = []
         for group in self.buckets:
-            createdBatchs.extend(group['batchs'])
-        if len(self.defBatchs) > 0 and includesCommentWithoutBucket:
-            createdBatchs.extend(self.defBatchs)
+            createdBatchs.extend([Batch(x,group["rule"]) for x in group['batchs'] if len(x) > 0])
+        createdBatchs.extend([Batch(x) for x in self.defBatchs if len(x) > 0])
         return createdBatchs
 requestSchemaOpenAI = {
     "type":"ARRAY",

@@ -1,7 +1,7 @@
 from src.comment import Comment
 from src.aiclient.promptInfo import PromptInfo
 
-from .client import AiClient,BatchBucketManager,FilterBatchByType,SplitBatchsByToken, requestSchemaOpenAI,KNOW_PROBLEMS
+from .client import AiClient,BatchBucketManager,FilterItemByType,SplitBatchsByToken,BatchRules, requestSchemaOpenAI,KNOW_PROBLEMS
 from .requestProcess import RequestProcess
 
 import logging
@@ -13,7 +13,6 @@ logger = logging.getLogger(__name__)
 COMMENT_LEN_LIMIT = 10000
     
 class GeminiClient(AiClient):
-    KNOW_PROBLEMS = ['delivery','damaged']
     def __init__(self,model = "gemini-1.5-flash",prefix:str = None):
         super().__init__('google:'+model)
         prefix = prefix + '_' if prefix else ''
@@ -26,7 +25,7 @@ class GeminiClient(AiClient):
     
     def _separateCommentsBatch(self) -> BatchBucketManager:
         bucket = BatchBucketManager(SplitBatchsByToken(lambda text: self.model.count_tokens(text).total_tokens,COMMENT_LEN_LIMIT))
-        bucket.addBucketRules(FilterBatchByType("worker"))
+        bucket.addBatchRule(BatchRules().addComponent(FilterItemByType("worker")))
         return bucket
     
     def _generatePrompt(self, comments: list[Comment]) -> PromptInfo:

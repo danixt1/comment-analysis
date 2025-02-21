@@ -67,7 +67,7 @@ def batchGenerateBatch(data,resultFn):
     comments:list[Comment] = data['comments']
     bucket = main._separateCommentsBatch()
     bucket.addComments(comments)
-    batchs = bucket.getBatchs(True)
+    batchs = bucket.getBatchs()
     batchs = [x for x in batchs if len(x)]
     data['batchs'] = batchs
     return resultFn(ResultEnum.CONTINUE)
