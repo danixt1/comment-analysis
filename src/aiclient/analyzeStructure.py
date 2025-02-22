@@ -1,7 +1,7 @@
 from src.cache import Cache
 from src.comment import Comment,CommentScorer
 from .process import Process
-from .client import AiClient
+from .client import AiClient,Batch
 from .requestProcess import RequestProcess
 from .promptInfo import PromptInfo
 
@@ -68,7 +68,6 @@ def batchGenerateBatch(data,resultFn):
     bucket = main._separateCommentsBatch()
     bucket.addComments(comments)
     batchs = bucket.getBatchs()
-    batchs = [x for x in batchs if len(x)]
     data['batchs'] = batchs
     return resultFn(ResultEnum.CONTINUE)
 
@@ -81,7 +80,7 @@ def _batchGeneratePrompt(data,batch:list[Comment]):
 
 def batchPrepareBatchsToProcess(data,resultFn):
     """Generate the final string prompt"""
-    batchs:list[list[Comment]] = data['batchs']
+    batchs:Batch = data['batchs']
     reqInfos = []
     for batch in batchs:
         reqInfos.append(_batchGeneratePrompt(data,batch))
@@ -173,30 +172,32 @@ def requestEnd(data,resultFn):
     return resultFn(ResultEnum.CONTINUE)
 
 # Scorer
-def scorerAdd(data,resultFn):
+def scorerAddToBatch(data:dict, resultFn):
     main:AiClient = data['main']
     if main.autoTestPercentage == 0.0:
         return resultFn(ResultEnum.SKIP)
     
     from src.datasets.makeDataset import makeData
 
-    comments:list[Comment] = data['comments']
-    quantity = int(len(comments) * main.autoTestPercentage) or 1
-    distribuition = int(len(comments) / quantity)
-    tests = makeData(quantity)
-    tests = [CommentScorer(**x) for x in tests]
-    data['comments'] = [x for x in comments]
-    testIndex =0
-    for i in range(len(comments) -1,0,-distribuition):
-        data['comments'].insert(i, tests[testIndex])
-        testIndex+=1 
+    batchs:list[Batch] = data['batchs']
+    totalScorers = int(len(batchs) * main.autoTestPercentage) or 1
+    scorersByBatch = int(len(batchs) / totalScorers)
+    for batch in batchs:
+        modifier = lambda x: x
+        if batch.rule and batch.rule.scorerModifier:
+            modifier = batch.rule.scorerModifier
+        commentsScorers =[CommentScorer(**x) for x in makeData(scorersByBatch)]
+
+        for commentScorer in commentsScorers:
+            modifier(commentScorer)
+        batch.insertCommentsScorer(commentsScorers)
     return resultFn(ResultEnum.CONTINUE)
 #request
 def scorerRemoveScorerFromRequest(data,resultFn):
     main:AiClient = data['main']
     requestData:RequestProcess = data['requestData']
     index:int = data['index']
-    batch = data['batch']
+    batch:Batch = data['batch']
     scores = []
     for x in batch:
         if isinstance(x, CommentScorer):
@@ -204,5 +205,5 @@ def scorerRemoveScorerFromRequest(data,resultFn):
     if len(scores) > 0:
         requestData.setScore(scores)
         logger.info(f"client {main.clientName}:score for batch {index} is {requestData.score.totalScore}")
-    data['batch'] = [x for x in batch if not isinstance(x, CommentScorer)]
+    batch.removeScorers()
     return resultFn(ResultEnum.CONTINUE)

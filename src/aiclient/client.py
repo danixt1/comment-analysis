@@ -98,15 +98,23 @@ class Batch:
     def __len__(self):
         return len(self.comments)
 
-    def __getitem__(self, index):
+    def __getitem__(self, index) -> Comment:
         return self.comments[index]
-
+    
     def __iter__(self):
         return iter(self.comments)
 
     def __str__(self):
         return str(self.comments)
-
+    def insertCommentsScorer(self, comments:list[CommentScorer]):
+        totComments = len(self.comments) - 1
+        distribuition = int(totComments / len(comments))
+        scorerIndex = 0
+        for i in range(totComments, 0,-distribuition):
+            self.comments.insert(i, comments[scorerIndex])
+            scorerIndex += 1
+    def removeScorers(self):
+        self.comments = [x for x in self.comments if not isinstance(x, CommentScorer)]
 class BatchBucketManager:
     """Class to create batchs, every batch is one prompt/request to the AI client"""
     def __init__(self, defSplitter:SplitBatch | None = None):
@@ -201,12 +209,11 @@ class AiClient(ABC):
     @abstractmethod
     def _makeRequestToAi(self,prompt:PromptInfo,request:RequestProcess):
         pass
-
     def analyze(self,comments: list[Comment],resultFn = None):
         from .analyzeStructure import (ResultEnum,cacheActive,cacheGetCachedComments,cacheSaveRequestComments,
                                        batchGenerateBatch,batchPrepareBatchsToProcess,
                                        requestGenerateData,requestAttachData,requestEnd,requestTryFixError,
-                                       scorerAdd,scorerRemoveScorerFromRequest)
+                                       scorerAddToBatch,scorerRemoveScorerFromRequest)
         lastResult:ResultEnum = None
         def defLastResult(x):
             nonlocal lastResult
@@ -221,9 +228,9 @@ class AiClient(ABC):
         if lastResult == ResultEnum.STOP:
             process.finish()
             return process.toDict()
-        scorerAdd(data, resultFn)
         batchGenerateBatch(data, resultFn)
         batchPrepareBatchsToProcess(data, resultFn)
+        scorerAddToBatch(data, resultFn)
         reqInfos = data['request_data']
         initialReqs = len(reqInfos)
         limitReqs = int(initialReqs * self.tolerance)
