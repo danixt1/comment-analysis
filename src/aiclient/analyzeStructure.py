@@ -49,7 +49,7 @@ def cacheGetCachedComments(data,resultFn):
 def cacheSaveRequestComments(data,resultFn):
     if not 'cache' in data:
         return resultFn(ResultEnum.SKIP)
-    batch:list[Comment] = data['batch']
+    batch:Batch = data['batch']
     cache:Cache = data['cache']
     cacheData = []
     for index in range(len(batch)):
@@ -71,7 +71,7 @@ def batchGenerateBatch(data,resultFn):
     data['batchs'] = batchs
     return resultFn(ResultEnum.CONTINUE)
 
-def _batchGeneratePrompt(data,batch:list[Comment]):
+def _batchGeneratePrompt(data,batch:Batch):
     main:AiClient = data['main']
     process:Process = data['process']
     prompt = main._generatePrompt(batch)
@@ -80,7 +80,7 @@ def _batchGeneratePrompt(data,batch:list[Comment]):
 
 def batchPrepareBatchsToProcess(data,resultFn):
     """Generate the final string prompt"""
-    batchs:Batch = data['batchs']
+    batchs:list[Batch] = data['batchs']
     reqInfos = []
     for batch in batchs:
         reqInfos.append(_batchGeneratePrompt(data,batch))
@@ -96,13 +96,13 @@ def requestTryFixError(data, resultFn):
     errorName = error[0]
     if (not errorName == "hallucination") and (not errorName == "partial-data"):
         return resultFn(ResultEnum.ERROR)
-    batch = data['batch']
+    batch:Batch = data['batch']
     reqInfos = data['request_data']
     lenBatch = len(batch)
     if errorName == "hallucination":
         logger.warning(f"client {data['main'].clientName}:hallucination error, retrying processing {lenBatch} comments in this batch")
         for a in [batch[:lenBatch//2],batch[lenBatch//2:]]:
-            reqInfos.append(_batchGeneratePrompt(data, a))
+            reqInfos.append(_batchGeneratePrompt(data, Batch(a,batch.rule)))
         return resultFn(ResultEnum.STOP)
     else:
         newBatch = []
@@ -113,7 +113,7 @@ def requestTryFixError(data, resultFn):
         startIndex = len(batch) - totalNotProcessedComments
         for i in range(startIndex, len(batch)):
             newBatch.append(batch[i])
-        reqInfos.append(_batchGeneratePrompt(data, newBatch))
+        reqInfos.append(_batchGeneratePrompt(data, Batch(newBatch,batch.rule)))
     return resultFn(ResultEnum.CONTINUE)
 
 def requestGenerateData(data,resultFn):
