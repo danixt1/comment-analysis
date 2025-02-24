@@ -15,9 +15,9 @@ KNOW_PROBLEMS = {
 }
 
 class ScorerModifier(ABC):
-    @abstractmethod
+    """Modify the creation and the `commentScorer` created"""
     def __call__(self, comment:CommentScorer)->None:
-        """Modify the current `commentScorer`"""
+        pass
     def exclude_tags(self)->list[str]:
         return []
 class FilterItem(ABC):
@@ -73,12 +73,17 @@ class SplitBatchByCharLimit(SplitBatch):
             return True
         return False
 class BatchRules:
-    def __init__(self):
+    """Define the rules of the batch have 3 rules who is modifiable.
+    1. `FilterItem`: define if the comment can or not by added to this batch.
+    2. `SplitBatch`: used to define the end of the batch and the creation of another batch.
+    3. `ScorerModifier`: used to determine the rules of creation and modify the `CommentScorer` added to this batch.
+    """
+    def __init__(self,name:str | None = None):
         self.splitter:SplitBatch | None = None
         self.filter:FilterItem = None
         self.scorerModifier:ScorerModifier | None = None
-
-    def addComponent(self,component: SplitBatch | FilterItem | ScorerModifier):
+        self.name = name
+    def addRules(self,component: SplitBatch | FilterItem | ScorerModifier):
         if isinstance(component, SplitBatch):
             self.splitter = component
         elif isinstance(component, FilterItem):
@@ -95,6 +100,7 @@ class Batch:
     def __init__(self,comments:list[Comment],rule:BatchRules = None):
         self.comments: list[Comment] = comments
         self.rule:BatchRules | None = rule
+        self.name = rule.name if rule else "default"
     def __len__(self):
         return len(self.comments)
 
@@ -108,7 +114,7 @@ class Batch:
         return str(self.comments)
     def insertCommentsScorer(self, comments:list[CommentScorer]):
         totComments = len(self.comments) - 1
-        distribuition = int(totComments / len(comments))
+        distribuition = int(totComments / len(comments)) or 1
         scorerIndex = 0
         for i in range(totComments, 0,-distribuition):
             self.comments.insert(i, comments[scorerIndex])
