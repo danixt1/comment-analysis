@@ -1,8 +1,11 @@
 from ..promptInfo import PromptInfo, setPromptsPath
 from ..client import AiClient, BatchBucketManager,FilterItemByType,BatchRules,SplitBatch
+from ..analyzeStructure import scorerAddToBatch
 from ...comment import Comment,CommentScorer
 from ..requestProcess import RequestProcess
 from typing import List
+from unittest.mock import patch
+
 class SplitBatchFalseAlways(SplitBatch):
     def __call__(self, batch, comment, data):
         return False
@@ -17,8 +20,8 @@ class FakeClient(AiClient):
         self.comments = None
     def _separateCommentsBatch(self) -> BatchBucketManager:
         bucket = BatchBucketManager(SplitBatchFalseAlways())
-        bucket.addBatchRule(BatchRules().addComponent(FilterItemByType('lot1')))
-        bucket.addBatchRule(BatchRules().addComponent(FilterItemByType('lot2')))
+        bucket.addBatchRule(BatchRules().addRules(FilterItemByType('lot1')))
+        bucket.addBatchRule(BatchRules().addRules(FilterItemByType('lot2')))
         return bucket
     def analyze(self, comments, resultFn=None):
         self.comments = comments
@@ -75,7 +78,8 @@ def test_client_flux():
     assert result['tokens']['input'] == 4
     assert client.countReqs == 2
 
-def test_client_with_auto_test():
+@patch('src.aiclient.analyzeStructure.scorerAddToBatch')
+def test_client_with_auto_test(mock_scorer):
     setPromptsPath("src/aiclient/tests/prompt")
     rets = [
         {"behavior":"neutral"},{"behavior":"happy"},{"behavior":"angry"},
@@ -84,14 +88,20 @@ def test_client_with_auto_test():
     TOTAL_AUTO_TESTS_PERCENTAGE = 0.50
     TOTAL_COMMENT_SCORER_EXPECTED = 2
     TOTAL_COMMENTS_EXPECTED = TOTAL_COMMENTS_PASSED + (TOTAL_AUTO_TESTS_PERCENTAGE * TOTAL_COMMENTS_PASSED)
+    originalFn = scorerAddToBatch
+    def sideEffectScorer(data,resultFn):
+        ret = originalFn(data, resultFn)
+        comments = [x for xs in data['batchs'] for x in xs]
+        assert len(comments) == TOTAL_COMMENTS_EXPECTED
+        assert len([x for x in comments if isinstance(x,CommentScorer)]) == TOTAL_COMMENT_SCORER_EXPECTED
+        return ret
+    mock_scorer.side_effect = sideEffectScorer
     client = FakeClient(rets)
     comments = [Comment('def', 'comment', 'test') for x in range(TOTAL_COMMENTS_PASSED)]
     client.useAutoTest(TOTAL_AUTO_TESTS_PERCENTAGE)
     result = client.analyze(comments)
 
     assert client.countReqs == 2
-    assert len(client.comments) == TOTAL_COMMENTS_EXPECTED
-    assert len([x for x in client.comments if isinstance(x,CommentScorer)]) == TOTAL_COMMENT_SCORER_EXPECTED
     assert 'score' in result
 
 def test_client_auto_retry_on_missing_data():
@@ -136,8 +146,8 @@ def test_batchBucketManager():
             return len(batch) == 2
     group =BatchBucketManager()
     batchRule = BatchRules()\
-        .addComponent(FilterItemByType('group1'))\
-        .addComponent(SplitBatchWhen2())
+        .addRules(FilterItemByType('group1'))\
+        .addRules(SplitBatchWhen2())
     comments = [Comment('test','group1') for _ in range(5)]
     comments.extend([Comment('test', 'group2') for _ in range(3)])
     random.shuffle(comments)
