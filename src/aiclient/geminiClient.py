@@ -1,7 +1,7 @@
 from src.comment import Comment
-from src.aiclient.promptInfo import PromptInfo
+from src.aiclient.promptInfo import PromptInfo,PromptModifier
 
-from .client import AiClient,BatchBucketManager,FilterItemByType,SplitBatchsByToken,BatchRules, requestSchemaOpenAI,KNOW_PROBLEMS
+from .client import AiClient,BatchBucketManager,FilterItemByType,SplitBatchsByToken,BatchRules, requestSchemaOpenAI,KNOW_PROBLEMS,Batch
 from .requestProcess import RequestProcess
 
 import logging
@@ -25,15 +25,11 @@ class GeminiClient(AiClient):
     
     def _separateCommentsBatch(self) -> BatchBucketManager:
         bucket = BatchBucketManager(SplitBatchsByToken(lambda text: self.model.count_tokens(text).total_tokens,COMMENT_LEN_LIMIT))
-        bucket.addBatchRule(BatchRules().addRules(FilterItemByType("worker")))
+        bucket.addBatchRule(BatchRules('worker').addRules(FilterItemByType("worker")))
         return bucket
     
-    def _generatePrompt(self, comments: list[Comment]) -> PromptInfo:
-        prompt = PromptInfo('worker' if comments[0].type == 'worker' else 'default')
-        formatedComments ="".join([f"<comment>{str(x)}</comment>\n" for x in comments])
-        if comments[0].type == 'worker':
-            return prompt.format(formatedComments)
-        return prompt.format(KNOW_PROBLEMS["product"],formatedComments)
+    def _generatePrompt(self, comments: Batch) -> PromptModifier:
+        return PromptModifier(comments.name).addKnowProblems(KNOW_PROBLEMS['product' if comments.name == 'default' else 'company']) #prompt.format(KNOW_PROBLEMS["product"],formatedComments)
     
     def _makeRequestToAi(self, prompt,request:RequestProcess):
         result = self.model.generate_content(

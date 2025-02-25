@@ -1,4 +1,5 @@
 from pathlib import Path
+from src.comment import Comment
 import hashlib
 
 indexs = []
@@ -14,7 +15,6 @@ class ExtractData:
         sha1 = hashlib.sha1(self.text.encode('utf-8'))
         return sha1.hexdigest()
     
-
 class PromptInfo:
     """ Get the text and hash from the specified prompt, prompt name is the prompt file without the extension"""
     def __init__(self,promptName:str):
@@ -24,10 +24,27 @@ class PromptInfo:
         self.prompt = prompt.text
     def __str__(self):
         return self.prompt
-    def format(self,*ops):
-        self.prompt = self.prompt.format(*ops)
+    def format(self,**ops):
+        self.prompt = self.prompt.format(**ops)
         return self
-    
+class PromptModifier:
+    def __init__(self,prompt:str):
+        promptInfo = PromptInfo(prompt)
+        self.promptInfo = promptInfo
+        self.comments = ""
+        self.problems = ""
+    def addComments(self, comments:list[Comment],open = "<comment>",close = "</comment>"):
+        promptComments = ([str(x) for x in comments])
+        promptComments = [open + x + close for x in promptComments]
+        self.comments = "\n".join(promptComments)
+        return self
+    def addKnowProblems(self, problems:list[str]):
+        self.problems = ",".join(problems)
+        return self
+    def generatePrompt(self):
+        return self.promptInfo.format(comments=self.comments, problems=self.problems)
+    def __str__(self):
+        return str(self.generatePrompt())
 def setPromptsPath(path):
     indexs.clear()
     prompts.clear()

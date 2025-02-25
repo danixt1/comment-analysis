@@ -1,6 +1,6 @@
 from typing import Callable
 from .clientObserver import ClientObserver
-from .promptInfo import PromptInfo
+from .promptInfo import PromptModifier, PromptInfo
 from .process import Process
 from .requestProcess import RequestProcess
 from ..comment import Comment,CommentScorer
@@ -210,7 +210,7 @@ class AiClient(ABC):
         """
         pass
     @abstractmethod
-    def _generatePrompt(self,comments:list[Comment]) ->PromptInfo:
+    def _generatePrompt(self,comments:Batch) ->PromptModifier:
         pass
     @abstractmethod
     def _makeRequestToAi(self,prompt:PromptInfo,request:RequestProcess):

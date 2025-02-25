@@ -3,7 +3,7 @@ from src.comment import Comment,CommentScorer
 from .process import Process
 from .client import AiClient,Batch
 from .requestProcess import RequestProcess
-from .promptInfo import PromptInfo
+from .promptInfo import PromptInfo, PromptModifier
 
 import logging
 from enum import Enum
@@ -74,7 +74,10 @@ def batchGenerateBatch(data,resultFn):
 def _batchGeneratePrompt(data,batch:Batch):
     main:AiClient = data['main']
     process:Process = data['process']
-    prompt = main._generatePrompt(batch)
+    prompt:PromptModifier = main._generatePrompt(batch)
+    if prompt.comments == "":
+        prompt.addComments(batch)
+    prompt = prompt.generatePrompt()
     index = process.addBatch(prompt,batch)
     return [batch,prompt,index]
 
