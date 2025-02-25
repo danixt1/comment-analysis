@@ -1,9 +1,8 @@
-from ..promptInfo import PromptInfo, setPromptsPath
-from ..client import AiClient, BatchBucketManager,FilterItemByType,BatchRules,SplitBatch
+from ..promptInfo import PromptModifier, setPromptsPath
+from ..client import AiClient, BatchBucketManager,FilterItemByType,BatchRules,SplitBatch,Batch
 from ..analyzeStructure import scorerAddToBatch
 from ...comment import Comment,CommentScorer
 from ..requestProcess import RequestProcess
-from typing import List
 from unittest.mock import patch
 
 class SplitBatchFalseAlways(SplitBatch):
@@ -20,8 +19,8 @@ class FakeClient(AiClient):
         self.comments = None
     def _separateCommentsBatch(self) -> BatchBucketManager:
         bucket = BatchBucketManager(SplitBatchFalseAlways())
-        bucket.addBatchRule(BatchRules().addRules(FilterItemByType('lot1')))
-        bucket.addBatchRule(BatchRules().addRules(FilterItemByType('lot2')))
+        bucket.addBatchRule(BatchRules("lot1").addRules(FilterItemByType('lot1')))
+        bucket.addBatchRule(BatchRules("lot2").addRules(FilterItemByType('lot2')))
         return bucket
     def analyze(self, comments, resultFn=None):
         self.comments = comments
@@ -34,11 +33,10 @@ class FakeClient(AiClient):
         self.expectedLot[0] =len(lot1)
         self.expectedLot[1] = len(lot2)
         return super().analyze(comments, resultFn)
-    def _generatePrompt(self,comments: List[Comment]):
+    def _generatePrompt(self,comments: Batch):
         assert len(comments) == self.expectedLot[self.actPrompt], "Don't have the expected quantity of comments to the lot"
         self.actPrompt+=1
-        firstCmt = comments[0]
-        return PromptInfo('test1' if str(firstCmt) == 'prompt1' else 'test2')
+        return PromptModifier('test1' if comments.name == "lot1" else 'test2').addComments(comments).addKnowProblems(['pr1','pr2','otherpr'])
     def _makeRequestToAi(self,prompt:str,request:RequestProcess):
         self.countReqs+=1
         request.setData(self.retData).setTokensInput(2).setTokensOutput(5)
@@ -57,7 +55,7 @@ class FakeClientAutoRetryTest(AiClient):
         return bucker
     def _generatePrompt(self, comments):
         self.promptHistoric.append(len(comments))
-        return PromptInfo('test1' if str(comments[0]) == 'prompt1' else 'test2')
+        return PromptModifier('test1' if str(comments[0]) == 'prompt1' else 'test2')
     def _makeRequestToAi(self, prompt, request):
         if self.actRes >= len(self.responses):
             raise Exception("No more responses")
@@ -156,3 +154,19 @@ def test_batchBucketManager():
     assert len(group.buckets) == 1
     assert [len(x) for x in group.getBatchs()] == [2,2,1,3]
     assert [len(x) for x in group.defBatchs] == [3]
+
+def test_prompt_formating():
+    setPromptsPath("src/aiclient/tests/prompt")
+    class FakeAiClientPromptTest(AiClient):
+        def __init__(self):
+            super().__init__("test")
+        def _generatePrompt(self, comments: Batch):
+            return PromptModifier('min').addKnowProblems(['pr1','pr2'])
+        def _separateCommentsBatch(self):
+            return BatchBucketManager(lambda x, y, z: False)
+        def _makeRequestToAi(self, prompt, request):
+            assert prompt == "problems:pr1,pr2 ,prompts: <comment>hi</comment>\n<comment>other hi</comment>"
+            return request.setData([{'behavior':'happy'},{'behavior':'angry'}]).setTokensInput(2).setTokensOutput(5)
+    comments = [Comment('hi'), Comment('other hi')]
+    client = FakeAiClientPromptTest()
+    client.analyze(comments)

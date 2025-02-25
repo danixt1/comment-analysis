@@ -1,1 +1,1 @@
-<SECOND_TEST> prompts: {}
+<SECOND_TEST>problems:{problems} prompts: {comments}

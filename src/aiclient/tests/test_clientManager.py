@@ -1,7 +1,7 @@
 from src.aiclient.clientManager import ClientManager
 from src.aiclient.analyzeStructure import scorerAddToBatch
 from src.aiclient.client import AiClient, BatchBucketManager, SplitBatchByCharLimit,Batch
-from src.aiclient.promptInfo import PromptInfo, setPromptsPath
+from src.aiclient.promptInfo import PromptInfo, setPromptsPath, PromptModifier
 from src.comment import Comment, CommentScorer
 from unittest.mock import patch
 
@@ -10,7 +10,7 @@ class FakeClient(AiClient):
         super().__init__('fake-client')
         self.comments = []
     def _generatePrompt(self, comments):
-        return PromptInfo('test1')
+        return PromptModifier('test1')
     def _makeRequestToAi(self, prompt, request):
         request.setData([{"behavior":"happy"}] * 3).setTokensInput(2).setTokensOutput(5)
     def _separateCommentsBatch(self):

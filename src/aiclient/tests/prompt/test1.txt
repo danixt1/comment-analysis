@@ -1,1 +1,1 @@
-<FIRST_TEST>Initial test with prompts: {}
+<FIRST_TEST>problems:{problems},Initial test with prompts: {comments}
