@@ -23,6 +23,7 @@ class ClientManager(ManagerBase):
             if self._scorerPercentage and not client.isUsingAutoTest():
                 client.useAutoTest(self._scorerPercentage)
             processors.append(client.analyze(comments))
+        logger.info("analyze done.")
         return processors
     
     @classmethod
