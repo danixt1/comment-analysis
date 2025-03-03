@@ -169,17 +169,17 @@ class BatchBucketManager:
         createdBatchs.extend([Batch(x) for x in self.defBatchs if len(x) > 0])
         return createdBatchs
 requestSchemaOpenAI = {
-    "type":"ARRAY",
+    "type":"array",
     "items":{
-        "type":"OBJECT",
+        "type":"object",
         "properties":{
-            "spam":{"type":"BOOLEAN"},
+            "spam":{"type":"boolean"},
             "behavior":{
-                "type":"STRING",
+                "type":"string",
                 "format":"enum",
                 "enum":["positive","negative","neutral","question"]
             },
-            "problems":{"type":"ARRAY","nullable":True,"items":{"type":"STRING"}}
+            "problems":{"type":"array","nullable":True,"items":{"type":"string"}}
         }
     }
 }
