@@ -1,5 +1,4 @@
-from src.comment import Comment
-from src.aiclient.promptInfo import PromptInfo,PromptModifier
+from src.aiclient.promptInfo import PromptModifier
 
 from .client import AiClient,BatchBucketManager,FilterItemByType,SplitBatchsByToken,BatchRules, requestSchemaOpenAI,KNOW_PROBLEMS,Batch
 from .requestProcess import RequestProcess
@@ -13,10 +12,9 @@ logger = logging.getLogger(__name__)
 COMMENT_LEN_LIMIT = 10000
     
 class GeminiClient(AiClient):
-    def __init__(self,model = "gemini-1.5-flash",prefix:str = None):
+    def __init__(self,model = "gemini-1.5-flash",env='GEMINI_API_KEY'):
         super().__init__('google:'+model)
-        prefix = prefix + '_' if prefix else ''
-        genai.configure(api_key=os.getenv(prefix+'GEMINI_API_KEY'))
+        genai.configure(api_key=os.getenv(env))
 
         self.model = genai.GenerativeModel(model)
         self.generation_config=genai.GenerationConfig(
