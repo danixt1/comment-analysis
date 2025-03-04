@@ -18,7 +18,7 @@ class RequestProcess:
         self.score = None
 
     def setData(self, data):
-        self.data = data
+        self.data = data if isinstance(data, list) else data['results']
         return self
     def setScore(self, scores):
         self.score = ScoreFromRequest(scores)

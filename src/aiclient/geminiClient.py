@@ -1,3 +1,4 @@
+from src.aiclient._aiclient.schema import CommentsAnalyzeResults
 from src.aiclient.promptInfo import PromptModifier
 
 from .client import AiClient,BatchBucketManager,FilterItemByType,SplitBatchsByToken,BatchRules, requestSchemaOpenAI,KNOW_PROBLEMS,Batch
@@ -18,7 +19,7 @@ class GeminiClient(AiClient):
 
         self.model = genai.GenerativeModel(model)
         self.generation_config=genai.GenerationConfig(
-            response_mime_type="application/json", response_schema=requestSchemaOpenAI
+            response_mime_type="application/json", response_schema=CommentsAnalyzeResults
         )
     
     def _separateCommentsBatch(self) -> BatchBucketManager:

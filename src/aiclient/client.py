@@ -168,21 +168,6 @@ class BatchBucketManager:
             createdBatchs.extend([Batch(x,group["rule"]) for x in group['batchs'] if len(x) > 0])
         createdBatchs.extend([Batch(x) for x in self.defBatchs if len(x) > 0])
         return createdBatchs
-requestSchemaOpenAI = {
-    "type":"array",
-    "items":{
-        "type":"object",
-        "properties":{
-            "spam":{"type":"boolean"},
-            "behavior":{
-                "type":"string",
-                "format":"enum",
-                "enum":["positive","negative","neutral","question"]
-            },
-            "problems":{"type":"array","nullable":True,"items":{"type":"string"}}
-        }
-    }
-}
 class AiClient(ABC):
     """
     Processing flux:

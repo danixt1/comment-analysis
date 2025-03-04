@@ -1,5 +1,5 @@
 IACLIENTS_DEPS = {
-    "gemini":'google-generativeai',
-    'openrouter':'openai',
-    'openai':'openai'
+    "gemini":['google-generativeai','pydantic'],
+    'openrouter':['openai','pydantic'],
+    'openai':['openai','pydantic']
 }

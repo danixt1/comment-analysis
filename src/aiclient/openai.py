@@ -3,9 +3,10 @@ from openai import OpenAI
 
 import os
 
+from src.aiclient._aiclient.schema import CommentsAnalyzeResults
 from src.aiclient.promptInfo import PromptModifier
 from src.aiclient.requestProcess import RequestProcess
-from .client import KNOW_PROBLEMS, AiClient, Batch, BatchBucketManager, BatchRules, FilterItemByType,requestSchemaOpenAI, SplitBatchByCharLimit
+from .client import KNOW_PROBLEMS, AiClient, Batch, BatchBucketManager, BatchRules, FilterItemByType, SplitBatchByCharLimit
 
 class OpenAIClient(AiClient):
     baseName="openai"
@@ -26,15 +27,7 @@ class OpenAIClient(AiClient):
         response = self.client.beta.chat.completions.parse(
             messages=[{"role":"system","content":prompt}],
             model=self.model,
-            response_format={
-                "type": "json_schema",
-                "json_schema":{
-                    "strict": True,
-                    "name":"analyze list",
-                    "description":"a list with the results of the analyze",
-                    "schema":requestSchemaOpenAI
-                }
-            })
+            response_format=CommentsAnalyzeResults)
         return request.\
             setData(json.loads(response.choices[0].message.content)).\
             setTokensInput(response.usage.prompt_tokens).\
