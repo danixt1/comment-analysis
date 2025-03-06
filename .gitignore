@@ -4,3 +4,4 @@ src/datasets/inserter.txt
 /.pytest_cache
 .vscode
 cache
+config.json

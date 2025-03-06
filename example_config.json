@@ -1,0 +1,34 @@
+{
+    "cache":false,
+    "expireCacheTime":0,
+    "collector":{
+        "data":[
+            {
+                "name":"tester",
+                "seed":"test",
+                "limit":20,
+                "gmts":["2020-10-04","2021-1-28"]
+            }
+        ]
+    },
+    "processing":{
+        "data":[
+            {
+                "name":"gemini",
+                "scorer":{
+                    "percentage":10
+                }
+            }
+        ]
+    },
+    "output":{
+        "data":[
+            {
+                "name":"mongodb",
+                "host":"localhost",
+                "process_collection":"gen-process",
+                "comments_collection":"gen-comments"
+            }
+        ]
+    }
+}
