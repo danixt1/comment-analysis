@@ -17,15 +17,18 @@ def getDeps(depDict,configs):
             deps += retVal
         
     return deps
+
 def run(path = None,putSudo = False, execCmd = False):
     deps = ['python-dotenv']
     if path == None:
         path = 'config.json'
     config = {}
-    with open(path,'r') as f:
-        import json
-        config = json.load(f)
-
+    try:
+        with open(path,'r') as f:
+            import json
+            config = json.load(f)
+    except FileNotFoundError:
+        raise FileNotFoundError("config.json not create, please read README.md to create the config.json")
     deps += getDeps(COLLECTORS_DEPS, config['collector'])
     deps += getDeps(IACLIENTS_DEPS, config['processing'])
     deps += getDeps(OUTPUTS_DEPS, config['output'])
